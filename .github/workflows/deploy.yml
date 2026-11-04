@@ -34,6 +34,12 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+        with:
+          # 仓库首次运行时 Pages 可能还没开启，交给 Action 自动初始化（Source = GitHub Actions）
+          enablement: true
+
       - run: npm ci
 
       - run: npm test
