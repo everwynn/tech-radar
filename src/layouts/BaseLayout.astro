@@ -1,0 +1,142 @@
+---
+import ThemeToggle from '../components/ThemeToggle.astro';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const site = Astro.site ?? new URL('https://everwynn.github.io');
+const canonical = new URL(Astro.url.pathname, site).href;
+const year = new Date().getFullYear();
+
+const nav = [
+  { href: base, label: '清单' },
+  { href: `${base}about/`, label: '关于' },
+];
+
+const isCurrent = (href: string) => {
+  const path = Astro.url.pathname.replace(/\/+$/, '/');
+  return path === href.replace(/\/+$/, '/');
+};
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121211" media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Tech Radar" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary" />
+
+    <script is:inline>
+      (function () {
+        var KEY = 'radar:theme';
+        var media = window.matchMedia('(prefers-color-scheme: dark)');
+
+        function read() {
+          try {
+            return localStorage.getItem(KEY) || 'system';
+          } catch (error) {
+            return 'system';
+          }
+        }
+
+        function resolve(mode) {
+          return mode === 'system' ? (media.matches ? 'dark' : 'light') : mode;
+        }
+
+        function apply(mode, persist) {
+          var resolved = resolve(mode);
+          document.documentElement.classList.toggle('dark', resolved === 'dark');
+          document.documentElement.setAttribute('data-theme-mode', mode);
+          document.documentElement.style.colorScheme = resolved;
+          if (persist) {
+            try {
+              localStorage.setItem(KEY, mode);
+            } catch (error) {
+              /* 隐私模式下写入失败，忽略即可 */
+            }
+          }
+        }
+
+        window.__radarTheme = { read: read, apply: apply, resolve: resolve };
+        apply(read(), false);
+
+        // 跟随系统时，系统主题变化要即时反映
+        media.addEventListener('change', function () {
+          if (read() === 'system') apply('system', false);
+        });
+      })();
+    </script>
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-ink focus:px-3 focus:py-2 focus:text-[13px] focus:text-canvas"
+    >
+      跳到正文
+    </a>
+
+    <header class="border-b border-line">
+      <div class="mx-auto flex max-w-content items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
+        <a href={base} class="flex min-w-0 items-baseline gap-2">
+          <span class="text-[15px] font-semibold tracking-tight">Tech Radar</span>
+          <span class="hidden text-[11px] text-muted sm:inline">技术栈版本雷达</span>
+        </a>
+
+        <div class="flex shrink-0 items-center gap-1">
+          <nav aria-label="主导航" class="flex items-center gap-0.5">
+            {nav.map((link) => (
+              <a
+                href={link.href}
+                aria-current={isCurrent(link.href) ? 'page' : undefined}
+                class:list={[
+                  'rounded-md px-2.5 py-1.5 text-[13px] transition-colors hover:text-ink',
+                  isCurrent(link.href) ? 'font-medium text-ink' : 'text-muted',
+                ]}
+              >
+                {link.label}
+              </a>
+            ))}
+          </nav>
+          <ThemeToggle />
+        </div>
+      </div>
+    </header>
+
+    <main id="main" class="mx-auto w-full max-w-content flex-1 px-4 py-7 sm:px-6">
+      <slot />
+    </main>
+
+    <footer class="border-t border-line">
+      <div class="mx-auto max-w-content px-4 py-7 text-[11px] leading-relaxed text-muted sm:px-6">
+        <p>
+          版本数据来自 endoflife.date、npm registry、GitHub Releases 与 OSV，每天抓取一次。
+          版本对比只报告最高一层差异，不代表升级难度或迁移成本。
+        </p>
+        <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span>© {year} everwynn</span>
+          <a href="https://everwynn.github.io/" class="transition-colors hover:text-ink">返回门户</a>
+          <a href="https://github.com/EverWynn/tech-radar" class="transition-colors hover:text-ink">源码</a>
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

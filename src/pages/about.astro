@@ -1,0 +1,129 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const SOURCES = [
+  {
+    name: 'endoflife.date',
+    use: '版本线、EOL 日期、LTS 标记',
+    note: '运行时与框架的生命周期数据，覆盖 Node.js、Temurin、Spring Boot、Vue、Tailwind CSS。',
+  },
+  {
+    name: 'npm registry',
+    use: '最新稳定版与版本全集',
+    note: '读取完整包文档后只保留 x.y.z 形式，预发布版本不进入列表。',
+  },
+  {
+    name: 'GitHub Releases',
+    use: '无 npm / 无 endoflife 覆盖的库',
+    note: '按 tag 前缀过滤并跳过预发布。不能用 /releases/latest——monorepo 会返回子包 tag。',
+  },
+  {
+    name: 'OSV',
+    use: '任意版本的已知漏洞',
+    note: '由浏览器直接查询，按「生态 + 包名 + 你输入的版本」精确匹配，不经过本站服务器。',
+  },
+];
+
+const RULES = [
+  {
+    title: '落后程度',
+    tone: 'text-warn',
+    body: '只比较版本号的前三段，并且只报告最高一层差异：跨大版本时不再累计小版本和补丁，避免「落后 3 个大版本 + 5 个补丁」这种误导性结论。',
+  },
+  {
+    title: '支持状态',
+    tone: 'text-danger',
+    body: '取该版本所属的版本线（cycle），用它的 EOL 日期和今天比较：已过期为「已停止支持」，180 天内为「即将停止支持」，其余为「支持中」。没有版本线数据的技术不显示该判断。',
+  },
+  {
+    title: '漏洞',
+    tone: 'text-warn',
+    body: '按你输入的准确版本查询 OSV，返回的是「影响该版本的公告条目」，会标注严重等级与最早的修复版本。条数不等于可利用性，需要结合修复版本自行评估。',
+  },
+];
+
+const LIMITS = [
+  'JDK 与 Node.js 查不到漏洞：OSV 按包管理生态组织数据，这两个属于运行时分发版，没有对应生态。',
+  '版本全集只覆盖 npm 生态。MyBatis-Plus 与 JJWT 只能拿到 GitHub 上的最新 release，输入更早版本时不校验是否存在。',
+  '预发布版本会被截断为三段版本号后参与比较，结果仅供参考。',
+  '「落后 N 个大版本」只描述版本号差距，不包含迁移成本或支持状态的含义。',
+  '同一个大版本下不同框架的迭代节奏差异很大，跨技术比较「落后几个版本」没有意义。',
+];
+
+---
+
+<BaseLayout title="关于 · Tech Radar" description="Tech Radar 的数据来源、计算口径、维护方式与已知局限。">
+  <article class="max-w-3xl">
+    <header class="border-b border-line pb-5">
+      <h1 class="text-[22px] font-semibold tracking-tight">关于</h1>
+      <p class="mt-2 text-[13px] leading-relaxed text-muted">
+        这是一个只服务自己的版本查询站：收录实际在用的技术与框架，展示它们的最新版本、每条版本线的支持截止日期，
+        以及任意版本的已知漏洞。它不假设你在用哪个版本——版本由你输入，结论实时计算。
+      </p>
+    </header>
+
+    <section class="mt-7">
+      <h2 class="text-[13px] font-semibold tracking-tight">数据来源</h2>
+      <dl class="mt-3 divide-y divide-line overflow-hidden rounded-lg border border-line">
+        {SOURCES.map((source) => (
+          <div class="bg-surface px-4 py-3">
+            <dt class="font-mono text-[12px] text-ink">{source.name}</dt>
+            <dd class="mt-1 text-[13px] text-ink">{source.use}</dd>
+            <dd class="mt-1 text-[11px] leading-relaxed text-muted">{source.note}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+
+    <section class="mt-7">
+      <h2 class="text-[13px] font-semibold tracking-tight">计算口径</h2>
+      <ol class="mt-3 space-y-2">
+        {RULES.map((rule, index) => (
+          <li class="flex gap-3 rounded-lg border border-line bg-surface px-4 py-3">
+            <span class="mt-0.5 font-mono text-[11px] text-muted">{String(index + 1).padStart(2, '0')}</span>
+            <div class="min-w-0">
+              <p class:list={['text-[13px] font-medium', rule.tone]}>{rule.title}</p>
+              <p class="mt-1 text-[11px] leading-relaxed text-muted">{rule.body}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="mt-7">
+      <h2 class="text-[13px] font-semibold tracking-tight">怎么维护</h2>
+      <ol class="mt-2 space-y-1.5 text-[13px] leading-relaxed text-muted">
+        <li>
+          <span class="font-mono text-[11px] text-ink">01</span>
+          在 <span class="font-mono text-ink">config/stack.mjs</span> 增删技术，只写数据源，不写版本号。
+        </li>
+        <li>
+          <span class="font-mono text-[11px] text-ink">02</span>
+          跑 <span class="font-mono text-ink">npm run fetch</span>，结果写入 <span class="font-mono text-ink">data/catalog.json</span>。
+        </li>
+        <li>
+          <span class="font-mono text-[11px] text-ink">03</span>
+          本地 <span class="font-mono text-ink">npm run dev</span> 试一次对比，确认数据正常再提交。
+        </li>
+      </ol>
+      <p class="mt-2 text-[11px] leading-relaxed text-muted">
+        GitHub Actions 每天自动执行同一套流程，数据无变化时不会产生提交。抓取失败的单项会保留上一轮数据并标「沿用上次」。
+      </p>
+    </section>
+
+    <section class="mt-7">
+      <h2 class="text-[13px] font-semibold tracking-tight">已知局限</h2>
+      <ul class="mt-2 space-y-1.5 text-[13px] leading-relaxed text-muted">
+        {LIMITS.map((limit) => <li>{limit}</li>)}
+      </ul>
+    </section>
+
+    <section class="mt-7">
+      <h2 class="text-[13px] font-semibold tracking-tight">隐私</h2>
+      <p class="mt-2 text-[13px] leading-relaxed text-muted">
+        漏洞查询在你的浏览器里直接发往 <span class="font-mono text-ink">api.osv.dev</span>，
+        只包含包名、生态与版本号，不涉及仓库地址、账号或代码内容。页面不加载第三方脚本、字体或统计。
+      </p>
+    </section>
+  </article>
+</BaseLayout>

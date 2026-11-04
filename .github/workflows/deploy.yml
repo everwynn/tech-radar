@@ -1,0 +1,68 @@
+name: Deploy Tech Radar
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # 每天 06:41（Asia/Shanghai）刷新一次版本数据
+    - cron: '41 22 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  # 不要中途取消 Pages 部署：取消进行中的部署会留下 canceled 状态
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DATA_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+      - run: npm run check
+
+      - run: npm run fetch
+        env:
+          # 提权 GitHub Releases 的限速（匿名 60 次/小时）
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit data if changed
+        run: |
+          if git diff --quiet -- data/; then
+            echo "数据无变化"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/
+            # [skip ci]：数据提交不再触发一轮部署
+            git commit -m "chore(data): refresh tech radar [skip ci]"
+            git push
+          fi
+
+      - run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

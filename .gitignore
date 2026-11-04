@@ -1,0 +1,30 @@
+# 依赖
+node_modules/
+
+# 构建产物与 Astro 缓存（由 CI 重新生成）
+dist/
+.astro/
+
+# 环境变量（保留示例文件）
+.env
+.env.*
+!.env.example
+
+# 测试与临时文件
+coverage/
+.tmp/
+*.log
+
+# 编辑器与系统
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+.DS_Store
+Thumbs.db
+
+# 本地设计文档与实施计划：只保留在本机，不随仓库发布
+/docs/
+
+# 误建的嵌套空仓库，仅含 .git，建议删除；即使保留也不会被提交
+/tech-radar/

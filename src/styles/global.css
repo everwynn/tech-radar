@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --c-canvas-rgb: 247 247 245;
+    --c-surface-rgb: 255 255 255;
+    --c-line-rgb: 226 226 221;
+    --c-ink-rgb: 28 28 26;
+    --c-muted-rgb: 107 107 102;
+    --c-ok-rgb: 31 122 77;
+    --c-warn-rgb: 154 107 0;
+    --c-danger-rgb: 179 38 30;
+    color-scheme: light;
+  }
+
+  html.dark {
+    --c-canvas-rgb: 18 18 17;
+    --c-surface-rgb: 26 26 25;
+    --c-line-rgb: 46 46 44;
+    --c-ink-rgb: 240 240 236;
+    --c-muted-rgb: 160 160 154;
+    --c-ok-rgb: 95 211 154;
+    --c-warn-rgb: 224 179 85;
+    --c-danger-rgb: 255 138 128;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans antialiased;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  /* details 的默认三角在 Chrome / Safari 里样式不可控，统一换成自绘图标 */
+  summary {
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-ink-rgb));
+    outline-offset: 2px;
+  }
+}

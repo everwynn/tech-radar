@@ -1,0 +1,135 @@
+---
+import { GROUP_LABELS, type CatalogItem, type Cycle } from '../lib/catalog';
+import { eolState } from '../lib/eol.mjs';
+
+interface Props {
+  item: CatalogItem;
+}
+
+const { item } = Astro.props;
+const groupLabel = GROUP_LABELS[item.group];
+const visibleCycles = item.cycles.slice(0, 6);
+const restCycles = item.cycles.slice(visibleCycles.length);
+const latestLine = item.cycles[0] ?? null;
+// 仍在支持（含即将到期）的版本线数量：展开不一定有必要，但「还有几条活着」值得一眼看到。
+const supportedCount = item.cycles.filter((cycle) => {
+  const state = eolState(cycle).state;
+  return state === 'ok' || state === 'near';
+}).length;
+const supportedNote =
+  supportedCount > 0 && supportedCount < item.cycles.length ? ` · ${supportedCount} 条仍受支持` : '';
+
+const eolText = (cycle: Cycle) => {
+  const state = eolState(cycle);
+  if (state.state === 'eol') return '已停止支持';
+  if (state.state === 'near') return cycle.eol ? `即将停止支持（${cycle.eol}）` : '即将停止支持';
+  if (cycle.eol === false || cycle.eol == null) return '未公布 EOL';
+  return `支持至 ${cycle.eol}`;
+};
+
+const toneOf = (cycle: Cycle) => {
+  const state = eolState(cycle);
+  if (state.state === 'eol') return 'text-danger';
+  if (state.state === 'near') return 'text-warn';
+  if (state.state === 'ok') return 'text-ok';
+  return 'text-muted';
+};
+
+// 版本线号也进搜索：展开后才能看到 22.0.2，却搜不到就说不通了。
+const haystack = [
+  item.name,
+  groupLabel,
+  item.latest ?? '',
+  item.latestLts ?? '',
+  ...item.cycles.flatMap((cycle) => [cycle.cycle, cycle.latest ?? '']),
+]
+  .join(' ')
+  .toLowerCase();
+---
+
+<article
+  class="flex min-w-0 flex-col rounded-xl border border-line bg-surface p-4 transition duration-150 ease-out hover:border-ink/20"
+  data-tech-card
+  data-group={item.group}
+  data-search={haystack}
+>
+  <div class="flex items-start justify-between gap-3">
+    <div class="min-w-0">
+      <h3 class="truncate text-[15px] font-semibold leading-snug tracking-tight">
+        {item.homepage ? (
+          <a href={item.homepage} target="_blank" rel="noopener noreferrer" class="hover:underline">{item.name}</a>
+        ) : (
+          item.name
+        )}
+      </h3>
+      <p class="mt-0.5 text-[11px] text-muted">{groupLabel}</p>
+    </div>
+    {item.stale && <span class="shrink-0 rounded px-1.5 py-0.5 text-[10px] text-warn ring-1 ring-inset ring-warn/30">沿用上次</span>}
+  </div>
+
+  <div class="mt-4">
+    <p class="font-mono text-[20px] leading-none tracking-tight">{item.latest ?? '暂无数据'}</p>
+    <p class="mt-1.5 text-[11px] text-muted">
+      {item.latestLts ? `最新 LTS ${item.latestLts}` : item.cycles.length ? '无 LTS 标记' : '该技术无版本线数据'}
+    </p>
+  </div>
+
+  {visibleCycles.length > 0 && (
+    <ul class="mt-4 space-y-1 border-t border-line pt-3 text-[11px]">
+      {visibleCycles.map((cycle) => (
+        <li class="flex items-baseline justify-between gap-3">
+          <span class="shrink-0 font-mono text-ink">{cycle.cycle}</span>
+          <span class="min-w-0 truncate font-mono text-muted">{cycle.latest ?? '—'}</span>
+          <span class:list={['shrink-0', toneOf(cycle)]}>{eolText(cycle)}</span>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  {restCycles.length > 0 && (
+    <details class="group">
+      <summary class="-mx-1 mt-1.5 flex cursor-pointer list-none select-none items-center gap-1.5 rounded-md border-t border-line px-1 py-1.5 text-[11px] text-muted transition hover:bg-ink/5 hover:text-ink">
+        <svg
+          class="h-2.5 w-2.5 shrink-0 transition-transform duration-150 group-open:rotate-90"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          aria-hidden="true"
+        >
+          <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <span class="group-open:hidden">展开其余 {restCycles.length} 条</span>
+        <span class="hidden group-open:inline">收起</span>
+      </summary>
+      <ul class="mt-1 space-y-1 text-[11px]">
+        {restCycles.map((cycle) => (
+          <li class="flex items-baseline justify-between gap-3">
+            <span class="shrink-0 font-mono text-ink">{cycle.cycle}</span>
+            <span class="min-w-0 truncate font-mono text-muted">{cycle.latest ?? '—'}</span>
+            <span class:list={['shrink-0', toneOf(cycle)]}>{eolText(cycle)}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )}
+
+  <div class="mt-auto flex items-end justify-between gap-3 pt-4">
+    <p class="text-[11px] text-muted">
+      {item.cycles.length > 0
+        ? `${item.cycles.length} 条版本线${supportedNote}`
+        : `${item.versions.length} 个版本`}
+    </p>
+    {item.latest && (
+      <button
+        type="button"
+        class="shrink-0 rounded-md border border-line px-2 py-1 text-[11px] text-muted transition hover:border-ink/30 hover:text-ink"
+        data-compare-jump={item.id}
+      >
+        查这个版本
+      </button>
+    )}
+  </div>
+
+  {latestLine && <span class="sr-only">最新版本线 {latestLine.cycle}</span>}
+</article>

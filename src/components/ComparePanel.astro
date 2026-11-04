@@ -1,0 +1,291 @@
+---
+import type { CatalogItem } from '../lib/catalog';
+
+interface Props {
+  items: CatalogItem[];
+}
+
+const { items } = Astro.props;
+const options = items.filter((item) => item.latest);
+const payload = JSON.stringify(options).replace(/</g, '\\u003c');
+---
+
+<section id="compare" class="scroll-mt-20 rounded-xl border border-line bg-surface p-4 sm:p-5">
+  <div class="flex flex-wrap items-baseline justify-between gap-2">
+    <h2 class="text-[15px] font-semibold tracking-tight">版本对比</h2>
+    <p class="text-[11px] text-muted">输入你手上的版本，查看落后程度、所属版本线与已知漏洞</p>
+  </div>
+
+  <form class="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end" data-compare-form>
+    <label class="flex min-w-0 flex-1 flex-col gap-1">
+      <span class="text-[11px] text-muted">技术</span>
+      <select
+        name="tech"
+        data-compare-tech
+        class="h-9 w-full rounded-md border border-line bg-canvas px-2 text-[13px] text-ink"
+      >
+        {options.map((item) => (
+          <option value={item.id}>{item.name} · 最新 {item.latest}</option>
+        ))}
+      </select>
+    </label>
+
+    <label class="flex min-w-0 flex-1 flex-col gap-1">
+      <span class="text-[11px] text-muted">版本</span>
+      <input
+        name="version"
+        data-compare-version
+        list="version-options"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="例如 20.11.1"
+        class="h-9 w-full rounded-md border border-line bg-canvas px-2 font-mono text-[13px] text-ink placeholder:font-sans"
+      />
+    </label>
+
+    <button
+      type="submit"
+      class="h-9 shrink-0 rounded-md bg-ink px-4 text-[13px] font-medium text-canvas transition hover:opacity-90"
+    >
+      对比
+    </button>
+  </form>
+
+  <datalist id="version-options"></datalist>
+
+  <div class="mt-4" data-compare-result aria-live="polite">
+    <p class="text-[11px] text-muted" data-compare-hint>
+      选择技术、输入版本后点对比。这里没有默认值，也不会读取你的项目。
+    </p>
+  </div>
+
+  <p class="mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
+    漏洞数据来自 OSV，按包名与版本号实时查询，只代表「该版本命中的公告条目」，不等同于安全结论，需结合修复版本自行评估。
+  </p>
+</section>
+
+<script type="application/json" id="radar-catalog" set:html={payload} />
+
+<script>
+  import { compareVersion } from '../lib/compare';
+  import { queryVulns } from '../lib/osv';
+  import type { CatalogItem } from '../lib/catalog';
+  import type { Vuln } from '../lib/osv';
+
+  const dataNode = document.getElementById('radar-catalog');
+  const catalog = (dataNode?.textContent ? JSON.parse(dataNode.textContent) : []) as CatalogItem[];
+  const byId = new Map(catalog.map((item) => [item.id, item]));
+
+  const form = document.querySelector<HTMLFormElement>('[data-compare-form]');
+  const techSelect = document.querySelector<HTMLSelectElement>('[data-compare-tech]');
+  const versionInput = document.querySelector<HTMLInputElement>('[data-compare-version]');
+  const resultBox = document.querySelector<HTMLDivElement>('[data-compare-result]');
+  const datalist = document.getElementById('version-options') as HTMLDataListElement | null;
+
+  const SEVERITY_STYLE: Record<string, string> = {
+    CRITICAL: 'border-danger',
+    HIGH: 'border-danger',
+    MODERATE: 'border-warn',
+    LOW: 'border-ok',
+    UNKNOWN: 'border-line',
+  };
+
+  const SEVERITY_TEXT: Record<string, string> = {
+    CRITICAL: '严重',
+    HIGH: '高危',
+    MODERATE: '中危',
+    LOW: '低危',
+    UNKNOWN: '未分级',
+  };
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = ''): HTMLElementTagNameMap[K] {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    return node;
+  }
+
+  function chip(text: string, tone = 'text-muted') {
+    const node = el('span', `rounded px-1.5 py-0.5 text-[10px] ring-1 ring-inset ring-line ${tone}`, text);
+    return node;
+  }
+
+  function syncVersionOptions() {
+    if (!techSelect || !datalist) return;
+    const item = byId.get(techSelect.value);
+    datalist.replaceChildren();
+    // datalist 超过两三百条会明显拖慢输入，只补最近 200 个稳定版本
+    for (const version of (item?.versions ?? []).slice(0, 200)) {
+      const option = document.createElement('option');
+      option.value = version;
+      datalist.append(option);
+    }
+    if (versionInput) {
+      versionInput.placeholder = item?.latest ? `例如 ${item.latest}` : '例如 20.11.1';
+    }
+  }
+
+  function vulnItem(vuln: Vuln) {
+    const item = el('li', `border-l-2 pl-2.5 ${SEVERITY_STYLE[vuln.severity] ?? 'border-line'}`);
+    const link = el('a', 'block truncate text-[12px] font-medium text-ink hover:underline', vuln.summary || vuln.id);
+    link.href = vuln.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    const meta = [
+      SEVERITY_TEXT[vuln.severity] ?? '未分级',
+      vuln.id,
+      vuln.fixed ? `修复于 ${vuln.fixed}` : '未公布修复版本',
+    ].join(' · ');
+    item.append(link, el('p', 'mt-0.5 truncate text-[10px] text-muted', meta));
+    return item;
+  }
+
+  async function fillVulns(item: CatalogItem, version: string, container: HTMLElement) {
+    if (!item.osv) {
+      container.append(
+        el(
+          'p',
+          'text-[11px] leading-relaxed text-muted',
+          'OSV 未收录该技术的漏洞数据：JDK 与 Node.js 属于运行时分发版，没有对应的包管理生态可供查询。',
+        ),
+      );
+      return;
+    }
+
+    container.append(el('p', 'text-[11px] text-muted', '正在查询该版本的已知漏洞…'));
+    try {
+      const vulns = await queryVulns(item.osv, version);
+      container.replaceChildren();
+      if (!vulns.length) {
+        container.append(el('p', 'text-[11px] text-ok', 'OSV 未查询到该版本的已知漏洞。'));
+        return;
+      }
+
+      const critical = vulns.filter((vuln) => vuln.severity === 'CRITICAL' || vuln.severity === 'HIGH').length;
+      const heading = critical
+        ? `该版本命中 ${vulns.length} 条公告，其中 ${critical} 条为严重或高危`
+        : `该版本命中 ${vulns.length} 条公告，无严重或高危`;
+      container.append(el('p', 'text-[11px] font-medium text-warn', heading));
+
+      const list = el('ul', 'mt-2 space-y-1.5');
+      const limit = 8;
+      for (const vuln of vulns.slice(0, limit)) list.append(vulnItem(vuln));
+      container.append(list);
+
+      if (vulns.length > limit) {
+        const rest = vulns.slice(limit);
+        const more = el(
+          'button',
+          'mt-2 text-[11px] text-muted underline decoration-dotted hover:text-ink',
+          `展开其余 ${rest.length} 条`,
+        );
+        more.type = 'button';
+        more.addEventListener('click', () => {
+          for (const vuln of rest) list.append(vulnItem(vuln));
+          more.remove();
+        });
+        container.append(more);
+      }
+    } catch (error) {
+      container.replaceChildren();
+      const message = error instanceof Error ? error.message : '未知错误';
+      container.append(el('p', 'text-[11px] text-danger', `漏洞查询失败：${message}。可稍后重试或直接到 osv.dev 查询。`));
+    }
+  }
+
+  function render() {
+    if (!techSelect || !versionInput || !resultBox) return;
+    const item = byId.get(techSelect.value);
+    if (!item) return;
+
+    const outcome = compareVersion(item, versionInput.value);
+    resultBox.replaceChildren();
+
+    if (!outcome.ok) {
+      resultBox.append(el('p', 'mt-3 text-[12px] text-warn', outcome.reason ?? '无法对比'));
+      return;
+    }
+
+    const head = el('div', 'mt-4 flex flex-wrap items-baseline gap-2 font-mono text-[15px]');
+    head.append(
+      el('span', '', outcome.input),
+      el('span', 'text-muted', '→'),
+      el('span', '', outcome.latest ?? '未知'),
+    );
+    resultBox.append(head);
+
+    const gapTone = outcome.aheadOfLatest
+      ? 'text-muted'
+      : outcome.gap.level === 'none'
+        ? 'text-ok'
+        : outcome.gap.level === 'major'
+          ? 'text-warn'
+          : 'text-warn';
+    resultBox.append(el('p', `mt-1 text-[15px] font-semibold ${gapTone}`, outcome.gapLabel));
+
+    const chips = el('div', 'mt-3 flex flex-wrap gap-1.5');
+    if (item.cycles.length > 0) {
+      chips.append(
+        chip(outcome.cycle ? `版本线 ${outcome.cycle.cycle}` : '未匹配到版本线'),
+        chip(
+          outcome.eolLabel,
+          outcome.eolState === 'eol'
+            ? 'text-danger'
+            : outcome.eolState === 'near'
+              ? 'text-warn'
+              : outcome.eolState === 'ok'
+                ? 'text-ok'
+                : 'text-muted',
+        ),
+      );
+    } else {
+      // 没有 endoflife 数据的技术，EOL 与版本线都不存在，给出单条说明比两个「未知」更清楚
+      chips.append(chip('该技术暂无 EOL 数据'));
+    }
+    if (outcome.isLts) chips.append(chip('LTS', 'text-ok'));
+    if (outcome.onLatestLine) chips.append(chip('已在最新版本线'));
+    if (outcome.latestLts) chips.append(chip(`最新 LTS ${outcome.latestLts}`));
+    if (outcome.releasedAt) chips.append(chip(`${outcome.cycle?.cycle} 线发布于 ${outcome.releasedAt}`));
+    resultBox.append(chips);
+
+    if (outcome.knownVersion === false) {
+      resultBox.append(
+        el('p', 'mt-2 text-[11px] text-muted', '该版本不在已同步的版本列表中（可能是更早的版本或预发布），对比结果仅供参考。'),
+      );
+    }
+
+    const vulnBox = el('div', 'mt-3 border-t border-line pt-3');
+    resultBox.append(vulnBox);
+    void fillVulns(item, outcome.input, vulnBox);
+  }
+
+  if (form && techSelect && versionInput && resultBox && datalist) {
+    syncVersionOptions();
+
+    techSelect.addEventListener('change', () => {
+      syncVersionOptions();
+      resultBox.replaceChildren();
+      versionInput.value = '';
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      render();
+    });
+
+    // 卡片上的「查这个版本」：选中技术、滚回面板、聚焦输入框
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement | null;
+      const trigger = target?.closest<HTMLElement>('[data-compare-jump]');
+      if (!trigger) return;
+      const id = trigger.dataset.compareJump ?? '';
+      if (!byId.has(id)) return;
+      techSelect.value = id;
+      syncVersionOptions();
+      versionInput.value = '';
+      resultBox.replaceChildren();
+      document.getElementById('compare')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.setTimeout(() => versionInput.focus(), 240);
+    });
+  }
+</script>
