@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-04T17:36:50.615Z",
+  "updatedAt": "2026-11-05T02:44:20.826Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -332,7 +332,7 @@
         },
         {
           "cycle": "11",
-          "latest": "11.0.32.1+1",
+          "latest": "11.0.33+10",
           "releaseDate": "2021-08-01",
           "eol": "2027-10-31",
           "support": null,
@@ -340,7 +340,7 @@
         },
         {
           "cycle": "8",
-          "latest": "8u504-b01",
+          "latest": "8u512-b09",
           "releaseDate": "2021-07-29",
           "eol": "2030-12-31",
           "support": null,
