@@ -40,6 +40,11 @@ const RULES = [
     tone: 'text-warn',
     body: '按你输入的准确版本查询 OSV，返回的是「影响该版本的公告条目」，会标注严重等级与最早的修复版本。条数不等于可利用性，需要结合修复版本自行评估。',
   },
+  {
+    title: '项目体检',
+    tone: 'text-warn',
+    body: '粘贴的依赖清单只在浏览器里解析：每个包向 npm 取 latest 标签，再一次性问 OSV 哪些包命中公告，命中的包才拉取严重度与修复版本。最多 40 个包；workspace:、file:、git 来源等落不到具体版本的写法会单独列出。',
+  },
 ];
 
 const LIMITS = [
@@ -48,6 +53,7 @@ const LIMITS = [
   '预发布版本会被截断为三段版本号后参与比较，结果仅供参考。',
   '「落后 N 个大版本」只描述版本号差距，不包含迁移成本或支持状态的含义。',
   '同一个大版本下不同框架的迭代节奏差异很大，跨技术比较「落后几个版本」没有意义。',
+  '项目体检只覆盖 npm 生态：Java 侧依赖仍需手动查询单个版本。npm 的 latest 标签未必等于「推荐升级目标」，跨大版本时仍需看迁移说明。',
 ];
 
 ---
@@ -121,8 +127,9 @@ const LIMITS = [
     <section class="mt-7">
       <h2 class="text-[13px] font-semibold tracking-tight">隐私</h2>
       <p class="mt-2 text-[13px] leading-relaxed text-muted">
-        漏洞查询在你的浏览器里直接发往 <span class="font-mono text-ink">api.osv.dev</span>，
-        只包含包名、生态与版本号，不涉及仓库地址、账号或代码内容。页面不加载第三方脚本、字体或统计。
+        版本对比与漏洞查询在你的浏览器里直接发往 <span class="font-mono text-ink">api.osv.dev</span>，
+        项目体检还会请求 <span class="font-mono text-ink">registry.npmjs.org</span>；
+        内容只有包名与版本号，不涉及仓库地址、账号或代码。页面不加载第三方脚本、字体或统计。
       </p>
     </section>
   </article>

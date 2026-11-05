@@ -69,6 +69,7 @@ const payload = JSON.stringify(options).replace(/</g, '\\u003c');
 <script>
   import { compareVersion } from '../lib/compare';
   import { queryVulns } from '../lib/osv';
+  import { SEVERITY_BORDER, SEVERITY_TEXT } from '../lib/vuln-ui';
   import type { CatalogItem } from '../lib/catalog';
   import type { Vuln } from '../lib/osv';
 
@@ -82,22 +83,6 @@ const payload = JSON.stringify(options).replace(/</g, '\\u003c');
   const resultBox = document.querySelector<HTMLDivElement>('[data-compare-result]');
   const datalist = document.getElementById('version-options') as HTMLDataListElement | null;
 
-  const SEVERITY_STYLE: Record<string, string> = {
-    CRITICAL: 'border-danger',
-    HIGH: 'border-danger',
-    MODERATE: 'border-warn',
-    LOW: 'border-ok',
-    UNKNOWN: 'border-line',
-  };
-
-  const SEVERITY_TEXT: Record<string, string> = {
-    CRITICAL: '严重',
-    HIGH: '高危',
-    MODERATE: '中危',
-    LOW: '低危',
-    UNKNOWN: '未分级',
-  };
-
   function el<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', text = ''): HTMLElementTagNameMap[K] {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -108,6 +93,22 @@ const payload = JSON.stringify(options).replace(/</g, '\\u003c');
   function chip(text: string, tone = 'text-muted') {
     const node = el('span', `rounded px-1.5 py-0.5 text-[10px] ring-1 ring-inset ring-line ${tone}`, text);
     return node;
+  }
+
+  // 把对比结果写进地址栏，刷新或把链接发给自己时能直接还原
+  function syncUrl(id: string, version: string) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('tech', id);
+    url.searchParams.set('v', version);
+    window.history.replaceState(null, '', url);
+  }
+
+  function clearUrl() {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('tech') && !url.searchParams.has('v')) return;
+    url.searchParams.delete('tech');
+    url.searchParams.delete('v');
+    window.history.replaceState(null, '', url);
   }
 
   function syncVersionOptions() {
@@ -126,7 +127,7 @@ const payload = JSON.stringify(options).replace(/</g, '\\u003c');
   }
 
   function vulnItem(vuln: Vuln) {
-    const item = el('li', `border-l-2 pl-2.5 ${SEVERITY_STYLE[vuln.severity] ?? 'border-line'}`);
+    const item = el('li', `border-l-2 pl-2.5 ${SEVERITY_BORDER[vuln.severity] ?? 'border-line'}`);
     const link = el('a', 'block truncate text-[12px] font-medium text-ink hover:underline', vuln.summary || vuln.id);
     link.href = vuln.url;
     link.target = '_blank';
@@ -203,6 +204,7 @@ const payload = JSON.stringify(options).replace(/</g, '\\u003c');
 
     if (!outcome.ok) {
       resultBox.append(el('p', 'mt-3 text-[12px] text-warn', outcome.reason ?? '无法对比'));
+      clearUrl();
       return;
     }
 
@@ -213,6 +215,7 @@ const payload = JSON.stringify(options).replace(/</g, '\\u003c');
       el('span', '', outcome.latest ?? '未知'),
     );
     resultBox.append(head);
+    syncUrl(item.id, outcome.input);
 
     const gapTone = outcome.aheadOfLatest
       ? 'text-muted'
@@ -266,6 +269,7 @@ const payload = JSON.stringify(options).replace(/</g, '\\u003c');
       syncVersionOptions();
       resultBox.replaceChildren();
       versionInput.value = '';
+      clearUrl();
     });
 
     form.addEventListener('submit', (event) => {
@@ -287,5 +291,18 @@ const payload = JSON.stringify(options).replace(/</g, '\\u003c');
       document.getElementById('compare')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       window.setTimeout(() => versionInput.focus(), 240);
     });
+
+    // ?tech=astro&v=4.16.19：打开即还原对比结果，方便把结论存进笔记或发给别人
+    const params = new URLSearchParams(window.location.search);
+    const presetTech = params.get('tech');
+    const presetVersion = params.get('v');
+    if (presetTech && byId.has(presetTech)) {
+      techSelect.value = presetTech;
+      syncVersionOptions();
+      if (presetVersion) {
+        versionInput.value = presetVersion;
+        render();
+      }
+    }
   }
 </script>

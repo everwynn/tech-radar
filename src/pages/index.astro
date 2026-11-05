@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ComparePanel from '../components/ComparePanel.astro';
+import AuditPanel from '../components/AuditPanel.astro';
 import TechCard from '../components/TechCard.astro';
 import { getItems, getUpdatedAt, getSources, groupItems, summarize } from '../lib/catalog';
 import { formatAbsolute, formatRelative } from '../lib/format';
@@ -27,7 +28,7 @@ const sourceEntries = Object.entries(sources);
     <h1 class="text-[22px] font-semibold leading-tight tracking-tight sm:text-[26px]">技术栈版本雷达</h1>
     <p class="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted">
       收录 {stats.total} 项技术的版本事实：最新稳定版、每条版本线的支持截止日期，以及任意版本的已知漏洞。
-      这里不假设你在用什么版本——输入你手上的版本，就能看到它落后多少、是否还在支持期内。
+      可以输入单个版本对比，也可以粘贴 package.json 把整串依赖一次体检。
     </p>
 
     <dl class="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4 sm:grid-cols-4">
@@ -68,12 +69,17 @@ const sourceEntries = Object.entries(sources);
     <ComparePanel items={items} />
   </div>
 
+  <div class="mt-4">
+    <AuditPanel />
+  </div>
+
   <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
     <h2 class="text-[15px] font-semibold tracking-tight">技术清单</h2>
     <label class="flex items-center gap-2">
       <span class="sr-only">搜索技术</span>
       <input
         type="search"
+        name="q"
         data-search-input
         placeholder="搜索技术名或版本号"
         autocomplete="off"
