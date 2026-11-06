@@ -23,12 +23,28 @@ export const stack = [
     lifecycle: { type: 'endoflife', product: 'eclipse-temurin' },
   },
   {
+    id: 'tomcat',
+    name: 'Apache Tomcat',
+    group: 'runtime',
+    homepage: 'https://tomcat.apache.org',
+    lifecycle: { type: 'endoflife', product: 'tomcat' },
+    osv: { ecosystem: 'Maven', package: 'org.apache.tomcat.embed:tomcat-embed-core' },
+  },
+  {
     id: 'spring-boot',
     name: 'Spring Boot',
     group: 'framework',
     homepage: 'https://spring.io/projects/spring-boot',
     lifecycle: { type: 'endoflife', product: 'spring-boot' },
     osv: { ecosystem: 'Maven', package: 'org.springframework.boot:spring-boot' },
+  },
+  {
+    id: 'spring-framework',
+    name: 'Spring Framework',
+    group: 'framework',
+    homepage: 'https://spring.io/projects/spring-framework',
+    lifecycle: { type: 'endoflife', product: 'spring-framework' },
+    osv: { ecosystem: 'Maven', package: 'org.springframework:spring-core' },
   },
   {
     id: 'vue',
@@ -68,6 +84,21 @@ export const stack = [
     group: 'frontend',
     homepage: 'https://vite.dev',
     versions: { type: 'npm', package: 'vite' },
+    osv: { ecosystem: 'npm', package: 'vite' },
+  },
+  {
+    id: 'mysql',
+    name: 'MySQL',
+    group: 'data',
+    homepage: 'https://dev.mysql.com',
+    lifecycle: { type: 'endoflife', product: 'mysql' },
+  },
+  {
+    id: 'redis',
+    name: 'Redis',
+    group: 'data',
+    homepage: 'https://redis.io',
+    lifecycle: { type: 'endoflife', product: 'redis' },
   },
   {
     id: 'mybatis-plus',
@@ -75,6 +106,7 @@ export const stack = [
     group: 'data',
     homepage: 'https://baomidou.com',
     releases: { type: 'github-release', repo: 'baomidou/mybatis-plus', tagPrefix: 'v' },
+    osv: { ecosystem: 'Maven', package: 'com.baomidou:mybatis-plus' },
   },
   {
     id: 'jjwt',
@@ -84,5 +116,13 @@ export const stack = [
     // jjwt 的 tag 不带 v 前缀（0.13.0），与 mybatis-plus 的 vX.Y.Z 不同
     releases: { type: 'github-release', repo: 'jwtk/jjwt', tagPrefix: '' },
     osv: { ecosystem: 'Maven', package: 'io.jsonwebtoken:jjwt-api' },
+  },
+  {
+    id: 'apache-maven',
+    name: 'Apache Maven',
+    group: 'tool',
+    homepage: 'https://maven.apache.org',
+    lifecycle: { type: 'endoflife', product: 'apache-maven' },
+    osv: { ecosystem: 'Maven', package: 'org.apache.maven:maven-core' },
   },
 ];

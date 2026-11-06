@@ -12,15 +12,15 @@
 | 区域 | 作用 |
 | --- | --- |
 | 版本对比 | 选技术 + 输入版本，给出落后程度、所属版本线、支持状态、LTS 标记，以及该版本的已知漏洞（默认 3–8 条，可展开）；结果写进地址栏，`?tech=astro&v=4.16.19` 可直接还原 |
-| 项目体检 | 粘贴 `package.json` 片段或「包名 版本」列表，一次列出每个包落后多少、命中哪些漏洞；支持依赖与开发依赖合并、作用域包名，无法落到具体版本的写法单独列出 |
-| 技术清单 | 按运行时 / 框架 / 前端库 / 数据与安全分组，每张卡片列出最新稳定版、最新 LTS、最近 6 条版本线及各自 EOL，其余版本线可在卡片内展开 |
+| 项目体检 | 粘贴 `package.json` 片段或「包名 版本」列表，一次列出每个包落后多少、命中哪些漏洞、升到哪个版本能避开；结果写进地址栏，`?deps=vue@3.3.0,astro@4.0.0` 可还原 |
+| 技术清单 | 按运行时 / 框架 / 前端库 / 数据与安全 / 工具链分组，每张卡片列出最新稳定版、最新 LTS、最近 6 条版本线及各自 EOL，其余版本线可在卡片内展开 |
 | 搜索 | 按技术名、分组名、版本号过滤卡片，输入 `3.5` 可同时命中 Vue、Vite、MyBatis-Plus |
 | 关于 | 数据来源、计算口径、维护方式、已知局限、隐私说明 |
 | 渐进增强 | 关闭 JS 时清单与全部静态信息照常显示，只有对比、搜索、漏洞查询不可用；375px 起无横向滚动 |
 
 ## 不做什么
 
-- 不做全生态版本数据库。endoflife.date 已覆盖数百个产品，这里只挑自己关心的十来项。
+- 不做全生态版本数据库。endoflife.date 已覆盖数百个产品，这里只挑自己关心的十几项（当前 15 项）。
 - 不做自动升级、不提交依赖升级 PR、不接 CI 报警——只陈述版本事实。
 - 不扫描仓库、不读取本地文件：只处理你主动粘贴的内容，也不推断「你实际在用什么版本」。
 - 不做账号、收藏、通知。数据一天刷新一次，足够回答上面三个问题。
@@ -29,10 +29,10 @@
 
 | 来源 | 用途 | 当前覆盖 |
 | --- | --- | --- |
-| [endoflife.date](https://endoflife.date) | 版本线、EOL、支持截止、LTS | Node.js、Temurin、Spring Boot、Vue、Tailwind CSS |
+| [endoflife.date](https://endoflife.date) | 版本线、EOL、支持截止、LTS | Node.js、Temurin、Tomcat、Spring Boot、Spring Framework、Vue、Tailwind CSS、MySQL、Redis、Apache Maven |
 | [npm registry](https://registry.npmjs.org) | 最新稳定版与版本全集 | Vue、Astro、Tailwind CSS、TypeScript、Vite |
 | [GitHub Releases](https://docs.github.com/rest/releases) | npm 与 endoflife 都没覆盖的库 | MyBatis-Plus、JJWT |
-| [OSV](https://osv.dev) | 任意版本的已知漏洞 | Spring Boot、Vue、Astro、JJWT（按生态 + 包名 + 版本查询） |
+| [OSV](https://osv.dev) | 任意版本的已知漏洞 | Spring Boot、Spring Framework、Tomcat、Vue、Astro、Vite、MyBatis-Plus、JJWT、Apache Maven（按生态 + 包名 + 版本查询） |
 
 三个抓取源（`endoflife` / `npm` / `github`）可以任意组合，每项至少用一个。OSV 不参与抓取，
 由浏览器直连，所以站点本身不存漏洞数据。
@@ -86,6 +86,12 @@
 修复版本取所有 `ranges` 中最小的 `fixed`；按严重度排序后展示。结果在内存里按「生态:包:版本」缓存，
 同一版本重复查询不再发起请求。
 
+### 升级目标
+
+如果当前版本命中公告，体检行会给出「升到 X 及以上可避开」。X 取所有命中公告 `fixed` 版本的最大值，
+也就是「能避开全部已公布修复」的最低版本；没有 `fixed` 的公告单独计数。这个数字是按 OSV 数据推算的下限，
+不等于推荐升级版本——跨大版本时仍要看迁移说明。
+
 ### 项目体检
 
 粘贴的内容先归一成「包名 + x.y.z」：支持完整 `package.json`、`dependencies` / `devDependencies` 片段，
@@ -96,6 +102,9 @@
 `api.osv.dev/v1/querybatch` 问哪些包命中公告；只有命中的包才逐个取详情（严重度、修复版本）。
 单个包查询失败只影响自己那一行；整批 OSV 失败时面板会明确标注「这次结论不含漏洞信息」。
 
+成功的体检会把已识别的包写进地址栏：`?deps=vue@3.3.0,astro@4.0.0`。
+打开链接会填回输入框并重新体检（最新版本与漏洞是实时的，所以只能还原范围，不能还原当时的结论）。
+
 ## 维护一项技术
 
 `config/stack.mjs` 是唯一维护入口：
@@ -103,7 +112,7 @@
 | 字段 | 必填 | 说明 |
 | --- | --- | --- |
 | `id` | 是 | 唯一，小写字母、数字、连字符 |
-| `name` / `group` / `homepage` | 是 | `group` 只能是 `runtime`、`framework`、`frontend`、`data`；`homepage` 必须 `https://` |
+| `name` / `group` / `homepage` | 是 | `group` 只能是 `runtime`、`framework`、`frontend`、`data`、`tool`；`homepage` 必须 `https://` |
 | `lifecycle` | 否 | `{ type: 'endoflife', product: 'nodejs' }`，product 用 endoflife 的 slug |
 | `versions` | 否 | `{ type: 'npm', package: 'vue' }` |
 | `releases` | 否 | `{ type: 'github-release', repo: 'owner/name', tagPrefix: 'v' }`，tag 无前缀时写空字符串 |
@@ -123,7 +132,7 @@
 npm install
 npm run fetch     # 抓取数据，写入 data/catalog.json
 npm run dev       # 本地预览
-npm test          # node --test：版本比较、EOL、取数源、清单校验
+npm test          # node --test：版本比较、EOL、取数源、清单校验、体检与分享链接
 npm run check     # astro check
 npm run build     # 产出 dist/
 ```
@@ -179,6 +188,8 @@ data/catalog.json         页面读取的数据快照
 - **版本号差距不等于迁移成本**：跨大版本往往伴随破坏性变更，本站在版本事实之外不做任何承诺。
 - **数据滞后最长一天**：新披露的漏洞能实时查到（OSV 直连），但最新版本号依赖每日抓取。
 - **项目体检只覆盖 npm**：Java 侧依赖仍需逐项对比；`latest` 标签也不等于推荐升级目标，跨大版本仍要看迁移说明。
+- **升级目标是下限而不是推荐值**：只按 OSV 的 `fixed` 取最大值推算，未考虑破坏性变更、传递依赖与调用方式。
+- **Tailwind CSS 与 TypeScript 查不到漏洞**：OSV 目前没有这两个包的公告记录，不是查询失败。
 
 ## 许可
 

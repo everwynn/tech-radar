@@ -5,7 +5,7 @@ const SOURCES = [
   {
     name: 'endoflife.date',
     use: '版本线、EOL 日期、LTS 标记',
-    note: '运行时与框架的生命周期数据，覆盖 Node.js、Temurin、Spring Boot、Vue、Tailwind CSS。',
+    note: '运行时、框架与数据服务的生命周期数据，覆盖 Node.js、Temurin、Tomcat、Spring Boot、Spring Framework、Vue、Tailwind CSS、MySQL、Redis、Apache Maven。',
   },
   {
     name: 'npm registry',
@@ -43,7 +43,7 @@ const RULES = [
   {
     title: '项目体检',
     tone: 'text-warn',
-    body: '粘贴的依赖清单只在浏览器里解析：每个包向 npm 取 latest 标签，再一次性问 OSV 哪些包命中公告，命中的包才拉取严重度与修复版本。最多 40 个包；workspace:、file:、git 来源等落不到具体版本的写法会单独列出。',
+    body: '粘贴的依赖清单只在浏览器里解析：每个包向 npm 取 latest 标签，再一次性问 OSV 哪些包命中公告，命中的包才拉取严重度与修复版本。命中公告时按 fixed 版本推算「升到 X 及以上」的下限；最多 40 个包；workspace:、file:、git 来源等落不到具体版本的写法会单独列出。体检结果会写进地址栏，刷新或分享链接可还原。',
   },
 ];
 
@@ -54,6 +54,8 @@ const LIMITS = [
   '「落后 N 个大版本」只描述版本号差距，不包含迁移成本或支持状态的含义。',
   '同一个大版本下不同框架的迭代节奏差异很大，跨技术比较「落后几个版本」没有意义。',
   '项目体检只覆盖 npm 生态：Java 侧依赖仍需手动查询单个版本。npm 的 latest 标签未必等于「推荐升级目标」，跨大版本时仍需看迁移说明。',
+  '升级目标只是 OSV 修复版本的下限：没有考虑破坏性变更、传递依赖与实际调用方式，不等于「升到这个版本就安全」。',
+  'Tailwind CSS 与 TypeScript 查不到漏洞，是因为 OSV 目前没有这两个包的公告记录，不是查询失败。',
 ];
 
 ---

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-export type Group = 'runtime' | 'framework' | 'frontend' | 'data';
+export type Group = 'runtime' | 'framework' | 'frontend' | 'data' | 'tool';
 
 export interface Cycle {
   cycle: string;
@@ -40,9 +40,10 @@ export const GROUP_LABELS: Record<Group, string> = {
   framework: '框架',
   frontend: '前端库',
   data: '数据与安全',
+  tool: '工具链',
 };
 
-export const GROUP_ORDER: Group[] = ['runtime', 'framework', 'frontend', 'data'];
+export const GROUP_ORDER: Group[] = ['runtime', 'framework', 'frontend', 'data', 'tool'];
 
 // catalog.json 由 npm run fetch 生成；首次克隆尚未抓取时退回空结构，保证 build 不中断。
 function load(): CatalogFile {

@@ -1,7 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildAuditRows, chunk, latestUrl, vulnIdsByIndex } from '../src/lib/audit-core.mjs';
+import {
+  buildAuditRows,
+  chunk,
+  latestUrl,
+  parseDepsParam,
+  safeTarget,
+  serializeDeps,
+  vulnIdsByIndex,
+} from '../src/lib/audit-core.mjs';
 
 test('npm latest 地址：作用域包名要编码', () => {
   assert.equal(latestUrl('vue'), 'https://registry.npmjs.org/vue/latest');
@@ -71,4 +79,40 @@ test('装行：跨大版本只报大版本差', () => {
   });
   assert.equal(row.gap.level, 'major');
   assert.equal(row.gapLabel, '落后 3 个大版本');
+});
+
+test('升级目标：取所有修复版本的最大值', () => {
+  const vulns = [{ fixed: '4.17.21' }, { fixed: '5.0.1' }, { fixed: null }];
+  assert.deepEqual(safeTarget(vulns, '4.17.20'), { version: '5.0.1', resolved: 2, unresolved: 1 });
+});
+
+test('升级目标：修复版本不高于当前版本时不给建议', () => {
+  assert.deepEqual(safeTarget([{ fixed: '1.0.0' }], '1.2.0'), { version: null, resolved: 1, unresolved: 0 });
+});
+
+test('升级目标：全部未公布修复版本时只报数量', () => {
+  assert.deepEqual(safeTarget([{ fixed: null }, {}], '1.0.0'), { version: null, resolved: 0, unresolved: 2 });
+  assert.deepEqual(safeTarget([], '1.0.0'), { version: null, resolved: 0, unresolved: 0 });
+});
+
+test('分享链接：依赖序列化与还原', () => {
+  const deps = [
+    { name: 'vue', current: '3.3.0' },
+    { name: '@types/node', current: '22.10.0' },
+  ];
+  const encoded = serializeDeps(deps);
+  assert.equal(encoded, 'vue@3.3.0,@types/node@22.10.0');
+  assert.deepEqual(parseDepsParam(encoded), [
+    { name: 'vue', raw: '3.3.0', current: '3.3.0' },
+    { name: '@types/node', raw: '22.10.0', current: '22.10.0' },
+  ]);
+});
+
+test('分享链接：跳过格式不对和重复的条目', () => {
+  assert.deepEqual(parseDepsParam('vue@3.3.0,vue@3.4.0,broken,1.0.0,astro@latest,astro@4.0.0'), [
+    { name: 'vue', raw: '3.3.0', current: '3.3.0' },
+    { name: 'astro', raw: '4.0.0', current: '4.0.0' },
+  ]);
+  assert.deepEqual(parseDepsParam(''), []);
+  assert.deepEqual(parseDepsParam(null), []);
 });

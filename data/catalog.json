@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-05T02:44:20.826Z",
+  "updatedAt": "2026-11-06T14:33:26.441Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -351,6 +351,93 @@
       "osv": null
     },
     {
+      "id": "tomcat",
+      "name": "Apache Tomcat",
+      "group": "runtime",
+      "homepage": "https://tomcat.apache.org",
+      "latest": "11.0.27",
+      "latestLts": null,
+      "cycles": [
+        {
+          "cycle": "11.0",
+          "latest": "11.0.27",
+          "releaseDate": "2024-10-03",
+          "eol": false,
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "10.1",
+          "latest": "10.1.61",
+          "releaseDate": "2022-09-23",
+          "eol": false,
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "10.0",
+          "latest": "10.0.27",
+          "releaseDate": "2020-12-03",
+          "eol": "2022-10-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "9.0",
+          "latest": "9.0.123",
+          "releaseDate": "2017-09-27",
+          "eol": "2027-03-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "8.5",
+          "latest": "8.5.100",
+          "releaseDate": "2016-03-17",
+          "eol": "2024-03-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "8.0",
+          "latest": "8.0.53",
+          "releaseDate": "2014-01-29",
+          "eol": "2018-06-30",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "7",
+          "latest": "7.0.109",
+          "releaseDate": "2010-06-13",
+          "eol": "2021-03-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "6",
+          "latest": "6.0.53",
+          "releaseDate": "2006-10-21",
+          "eol": "2016-12-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "5",
+          "latest": "5.5.36",
+          "releaseDate": "2003-09-06",
+          "eol": "2012-09-30",
+          "support": null,
+          "lts": null
+        }
+      ],
+      "versions": [],
+      "osv": {
+        "ecosystem": "Maven",
+        "package": "org.apache.tomcat.embed:tomcat-embed-core"
+      }
+    },
+    {
       "id": "spring-boot",
       "name": "Spring Boot",
       "group": "framework",
@@ -502,16 +589,111 @@
       }
     },
     {
+      "id": "spring-framework",
+      "name": "Spring Framework",
+      "group": "framework",
+      "homepage": "https://spring.io/projects/spring-framework",
+      "latest": "7.0.10",
+      "latestLts": "5.3.39",
+      "cycles": [
+        {
+          "cycle": "7.0",
+          "latest": "7.0.10",
+          "releaseDate": "2025-11-30",
+          "eol": "2027-07-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "6.2",
+          "latest": "6.2.19",
+          "releaseDate": "2024-11-30",
+          "eol": "2026-06-30",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "6.1",
+          "latest": "6.1.21",
+          "releaseDate": "2023-11-30",
+          "eol": "2025-06-30",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "6.0",
+          "latest": "6.0.23",
+          "releaseDate": "2022-11-30",
+          "eol": "2024-06-30",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "5.3",
+          "latest": "5.3.39",
+          "releaseDate": "2020-10-31",
+          "eol": "2024-08-31",
+          "support": null,
+          "lts": true
+        },
+        {
+          "cycle": "5.2",
+          "latest": "5.2.25",
+          "releaseDate": "2019-09-30",
+          "eol": "2021-12-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "5.1",
+          "latest": "5.1.20",
+          "releaseDate": "2018-09-30",
+          "eol": "2020-12-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "5.0",
+          "latest": "5.0.20",
+          "releaseDate": "2017-09-28",
+          "eol": "2020-12-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "4.3",
+          "latest": "4.3.30",
+          "releaseDate": "2016-06-10",
+          "eol": "2020-12-31",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "3.2",
+          "latest": "3.2.18",
+          "releaseDate": "2012-12-13",
+          "eol": "2016-12-31",
+          "support": null,
+          "lts": null
+        }
+      ],
+      "versions": [],
+      "osv": {
+        "ecosystem": "Maven",
+        "package": "org.springframework:spring-core"
+      }
+    },
+    {
       "id": "vue",
       "name": "Vue",
       "group": "framework",
       "homepage": "https://vuejs.org",
-      "latest": "3.5.44",
+      "latest": "3.5.45",
       "latestLts": null,
       "cycles": [
         {
           "cycle": "3.5",
-          "latest": "3.5.44",
+          "latest": "3.5.45",
           "releaseDate": "2024-09-03",
           "eol": false,
           "support": true,
@@ -631,6 +813,7 @@
         }
       ],
       "versions": [
+        "3.5.45",
         "3.5.44",
         "3.5.43",
         "3.5.42",
@@ -982,10 +1165,12 @@
       "name": "Astro",
       "group": "framework",
       "homepage": "https://astro.build",
-      "latest": "7.4.5",
+      "latest": "7.4.7",
       "latestLts": null,
       "cycles": [],
       "versions": [
+        "7.4.7",
+        "7.4.6",
         "7.4.5",
         "7.4.4",
         "7.4.3",
@@ -2318,10 +2503,11 @@
       "name": "Vite",
       "group": "frontend",
       "homepage": "https://vite.dev",
-      "latest": "8.3.5",
+      "latest": "8.3.6",
       "latestLts": null,
       "cycles": [],
       "versions": [
+        "8.3.6",
         "8.3.5",
         "8.3.4",
         "8.3.3",
@@ -2763,6 +2949,313 @@
         "0.1.1",
         "0.1.0"
       ],
+      "osv": {
+        "ecosystem": "npm",
+        "package": "vite"
+      }
+    },
+    {
+      "id": "mysql",
+      "name": "MySQL",
+      "group": "data",
+      "homepage": "https://dev.mysql.com",
+      "latest": "26.10.0",
+      "latestLts": "9.7.4",
+      "cycles": [
+        {
+          "cycle": "26.10",
+          "latest": "26.10.0",
+          "releaseDate": "2026-10-20",
+          "eol": false,
+          "support": true,
+          "lts": null
+        },
+        {
+          "cycle": "26.7",
+          "latest": "26.7.1",
+          "releaseDate": "2026-07-28",
+          "eol": "2026-10-20",
+          "support": "2026-10-20",
+          "lts": null
+        },
+        {
+          "cycle": "9.7",
+          "latest": "9.7.4",
+          "releaseDate": "2026-04-21",
+          "eol": "2034-04-30",
+          "support": "2031-04-30",
+          "lts": true
+        },
+        {
+          "cycle": "9.6",
+          "latest": "9.6.1",
+          "releaseDate": "2026-01-20",
+          "eol": "2026-04-21",
+          "support": "2026-04-21",
+          "lts": null
+        },
+        {
+          "cycle": "9.5",
+          "latest": "9.5.2",
+          "releaseDate": "2025-10-21",
+          "eol": "2026-01-20",
+          "support": "2026-01-20",
+          "lts": null
+        },
+        {
+          "cycle": "9.4",
+          "latest": "9.4.2",
+          "releaseDate": "2025-07-22",
+          "eol": "2025-10-21",
+          "support": "2025-10-21",
+          "lts": null
+        },
+        {
+          "cycle": "9.3",
+          "latest": "9.3.2",
+          "releaseDate": "2025-04-15",
+          "eol": "2025-07-22",
+          "support": "2025-07-22",
+          "lts": null
+        },
+        {
+          "cycle": "9.2",
+          "latest": "9.2.2",
+          "releaseDate": "2025-01-21",
+          "eol": "2025-04-15",
+          "support": "2025-04-15",
+          "lts": null
+        },
+        {
+          "cycle": "9.1",
+          "latest": "9.1.2",
+          "releaseDate": "2024-10-15",
+          "eol": "2025-01-21",
+          "support": "2025-01-21",
+          "lts": null
+        },
+        {
+          "cycle": "9.0",
+          "latest": "9.0.1",
+          "releaseDate": "2024-07-01",
+          "eol": "2024-10-15",
+          "support": "2024-10-15",
+          "lts": null
+        },
+        {
+          "cycle": "8.4",
+          "latest": "8.4.13",
+          "releaseDate": "2024-04-30",
+          "eol": "2032-04-30",
+          "support": "2029-04-30",
+          "lts": true
+        },
+        {
+          "cycle": "8.3",
+          "latest": "8.3.0",
+          "releaseDate": "2024-01-16",
+          "eol": "2024-04-30",
+          "support": "2024-04-30",
+          "lts": null
+        },
+        {
+          "cycle": "8.2",
+          "latest": "8.2.0",
+          "releaseDate": "2023-10-25",
+          "eol": "2024-01-16",
+          "support": "2024-01-16",
+          "lts": null
+        },
+        {
+          "cycle": "8.1",
+          "latest": "8.1.0",
+          "releaseDate": "2023-07-18",
+          "eol": "2023-10-25",
+          "support": "2023-10-25",
+          "lts": null
+        },
+        {
+          "cycle": "8.0",
+          "latest": "8.0.46",
+          "releaseDate": "2018-04-19",
+          "eol": "2026-04-30",
+          "support": "2025-04-30",
+          "lts": "2023-07-18"
+        },
+        {
+          "cycle": "5.7",
+          "latest": "5.7.44",
+          "releaseDate": "2015-10-09",
+          "eol": "2023-10-31",
+          "support": "2020-10-31",
+          "lts": null
+        },
+        {
+          "cycle": "5.6",
+          "latest": "5.6.51",
+          "releaseDate": "2013-02-01",
+          "eol": "2021-02-28",
+          "support": "2018-02-28",
+          "lts": null
+        },
+        {
+          "cycle": "5.5",
+          "latest": "5.5.63",
+          "releaseDate": "2010-12-03",
+          "eol": "2018-12-31",
+          "support": "2015-12-31",
+          "lts": null
+        },
+        {
+          "cycle": "5.1",
+          "latest": "5.1.73",
+          "releaseDate": "2008-12-08",
+          "eol": "2013-12-31",
+          "support": "2013-12-31",
+          "lts": null
+        },
+        {
+          "cycle": "5.0",
+          "latest": "5.0.96",
+          "releaseDate": "2005-10-24",
+          "eol": "2011-12-31",
+          "support": "2011-12-31",
+          "lts": null
+        },
+        {
+          "cycle": "4.1",
+          "latest": "4.1.24",
+          "releaseDate": "2004-10-23",
+          "eol": "2009-12-31",
+          "support": "2006-12-31",
+          "lts": null
+        },
+        {
+          "cycle": "4.0",
+          "latest": "4.0.30",
+          "releaseDate": "2003-03-15",
+          "eol": "2008-09-30",
+          "support": "2006-09-30",
+          "lts": null
+        },
+        {
+          "cycle": "3.23",
+          "latest": "3.23.58",
+          "releaseDate": "2001-01-17",
+          "eol": "2006-12-31",
+          "support": "2006-07-31",
+          "lts": null
+        }
+      ],
+      "versions": [],
+      "osv": null
+    },
+    {
+      "id": "redis",
+      "name": "Redis",
+      "group": "data",
+      "homepage": "https://redis.io",
+      "latest": "8.10.3",
+      "latestLts": null,
+      "cycles": [
+        {
+          "cycle": "8.10",
+          "latest": "8.10.3",
+          "releaseDate": "2026-07-29",
+          "eol": false,
+          "support": true,
+          "lts": null
+        },
+        {
+          "cycle": "8.8",
+          "latest": "8.8.4",
+          "releaseDate": "2026-05-25",
+          "eol": false,
+          "support": "2026-07-29",
+          "lts": null
+        },
+        {
+          "cycle": "8.6",
+          "latest": "8.6.8",
+          "releaseDate": "2026-02-11",
+          "eol": false,
+          "support": "2026-05-25",
+          "lts": null
+        },
+        {
+          "cycle": "8.4",
+          "latest": "8.4.8",
+          "releaseDate": "2025-11-18",
+          "eol": false,
+          "support": "2026-02-11",
+          "lts": null
+        },
+        {
+          "cycle": "8.2",
+          "latest": "8.2.11",
+          "releaseDate": "2025-08-04",
+          "eol": "2030-09-01",
+          "support": "2025-11-18",
+          "lts": null
+        },
+        {
+          "cycle": "8.0",
+          "latest": "8.0.6",
+          "releaseDate": "2025-05-02",
+          "eol": "2026-12-01",
+          "support": "2025-08-04",
+          "lts": null
+        },
+        {
+          "cycle": "7.4",
+          "latest": "7.4.12",
+          "releaseDate": "2024-07-29",
+          "eol": "2029-12-01",
+          "support": "2025-05-02",
+          "lts": null
+        },
+        {
+          "cycle": "7.2",
+          "latest": "7.2.17",
+          "releaseDate": "2023-08-15",
+          "eol": "2029-12-01",
+          "support": "2024-07-29",
+          "lts": null
+        },
+        {
+          "cycle": "7.0",
+          "latest": "7.0.15",
+          "releaseDate": "2022-04-27",
+          "eol": "2024-07-29",
+          "support": "2023-08-15",
+          "lts": null
+        },
+        {
+          "cycle": "6.2",
+          "latest": "6.2.24",
+          "releaseDate": "2021-02-22",
+          "eol": "2027-04-01",
+          "support": "2022-04-27",
+          "lts": null
+        },
+        {
+          "cycle": "6.0",
+          "latest": "6.0.20",
+          "releaseDate": "2020-04-30",
+          "eol": "2022-05-31",
+          "support": "2021-02-22",
+          "lts": null
+        },
+        {
+          "cycle": "5.0",
+          "latest": "5.0.14",
+          "releaseDate": "2018-10-17",
+          "eol": "2022-04-27",
+          "support": "2020-04-30",
+          "lts": null
+        }
+      ],
+      "versions": [],
       "osv": null
     },
     {
@@ -2774,7 +3267,10 @@
       "latestLts": null,
       "cycles": [],
       "versions": [],
-      "osv": null
+      "osv": {
+        "ecosystem": "Maven",
+        "package": "com.baomidou:mybatis-plus"
+      }
     },
     {
       "id": "jjwt",
@@ -2788,6 +3284,109 @@
       "osv": {
         "ecosystem": "Maven",
         "package": "io.jsonwebtoken:jjwt-api"
+      }
+    },
+    {
+      "id": "apache-maven",
+      "name": "Apache Maven",
+      "group": "tool",
+      "homepage": "https://maven.apache.org",
+      "latest": "3.10.0",
+      "latestLts": null,
+      "cycles": [
+        {
+          "cycle": "3.10",
+          "latest": "3.10.0",
+          "releaseDate": "2026-09-27",
+          "eol": false,
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "3.9",
+          "latest": "3.9.16",
+          "releaseDate": "2023-01-31",
+          "eol": false,
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "3.8",
+          "latest": "3.8.9",
+          "releaseDate": "2021-03-30",
+          "eol": "2025-06-14",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "3.6",
+          "latest": "3.6.3",
+          "releaseDate": "2018-10-24",
+          "eol": "2021-03-30",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "3.5",
+          "latest": "3.5.4",
+          "releaseDate": "2017-04-03",
+          "eol": "2018-10-24",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "3.3",
+          "latest": "3.3.9",
+          "releaseDate": "2015-03-13",
+          "eol": "2017-04-03",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "3.2",
+          "latest": "3.2.5",
+          "releaseDate": "2014-02-14",
+          "eol": "2015-03-13",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "3.1",
+          "latest": "3.1.1",
+          "releaseDate": "2013-06-28",
+          "eol": "2014-02-14",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "3.0",
+          "latest": "3.0.5",
+          "releaseDate": "2010-10-04",
+          "eol": "2013-06-28",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "2",
+          "latest": "2.2.1",
+          "releaseDate": "2006-05-07",
+          "eol": "2014-02-18",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "1",
+          "latest": "1.1",
+          "releaseDate": "2004-07-13",
+          "eol": "2014-02-18",
+          "support": null,
+          "lts": null
+        }
+      ],
+      "versions": [],
+      "osv": {
+        "ecosystem": "Maven",
+        "package": "org.apache.maven:maven-core"
       }
     }
   ]

@@ -43,12 +43,13 @@
   </div>
 
   <p class="mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
-    版本取 npm registry 的 latest 标签，漏洞来自 OSV；只统计当前版本命中的公告条目，不等于安全结论。解析不了的写法会单独列出，不做猜测。
+    版本取 npm registry 的 latest 标签，漏洞来自 OSV；只统计当前版本命中的公告条目，不等于安全结论。解析不了的写法会单独列出，不做猜测；成功的体检会写进地址栏，方便刷新或分享。
   </p>
 </section>
 
 <script>
   import { MAX_DEPS, parseDeps, summarizeAudit, sortAuditRows } from '../lib/deps.mjs';
+  import { parseDepsParam, safeTarget, serializeDeps } from '../lib/audit-core.mjs';
   import { auditDeps, type AuditOutcome, type AuditRow } from '../lib/audit';
   import { SEVERITY_TEXT, SEVERITY_TONE } from '../lib/vuln-ui';
 
@@ -132,6 +133,26 @@
     }
 
     if (row.vulns.length) {
+      const target = safeTarget(row.vulns, row.current);
+      if (target.version) {
+        const line = el('p', 'mt-1 text-[11px] text-ink');
+        line.append(document.createTextNode('按 OSV 修复版本，升到 '));
+        line.append(el('span', 'font-mono', target.version));
+        line.append(
+          document.createTextNode(
+            target.unresolved
+              ? ` 及以上可避开 ${target.resolved} 条；另有 ${target.unresolved} 条暂无修复版本`
+              : ` 及以上可避开全部 ${target.resolved} 条公告`,
+          ),
+        );
+        line.title = '按 OSV 每条公告的 fixed 版本取最大值推算，不等于推荐升级版本';
+        item.append(line);
+      } else if (target.unresolved) {
+        item.append(
+          el('p', 'mt-1 text-[11px] text-muted', `这 ${target.unresolved} 条都没有公布修复版本，暂时给不出升级目标。`),
+        );
+      }
+
       const list = el('ul', 'mt-1 space-y-0.5');
       // 一个老版本可能命中几十条公告，默认只展开前几条，避免整个面板被漏洞淹没
       const limit = 3;
@@ -191,49 +212,85 @@
     result.replaceChildren(container);
   }
 
+  // 把本次体检的包写进地址栏，刷新或发给别人时能直接还原
+  function syncUrl(deps: { name: string; current: string }[]) {
+    const value = serializeDeps(deps);
+    if (!value) {
+      clearUrl();
+      return;
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.set('deps', value);
+    // 保留 @ 与逗号，读起来比 %40 / %2C 直接
+    const query = url.searchParams.toString().replace(/%40/g, '@').replace(/%2C/g, ',');
+    window.history.replaceState(null, '', `${url.pathname}${query ? `?${query}` : ''}${url.hash}`);
+  }
+
+  function clearUrl() {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('deps')) return;
+    url.searchParams.delete('deps');
+    window.history.replaceState(null, '', url);
+  }
+
+  async function runAudit(text: string) {
+    if (!input || !result || submitButton?.disabled) return;
+
+    const parsed = parseDeps(text);
+    result.replaceChildren();
+
+    if (parsed.format === 'empty') {
+      result.append(el('p', 'text-[12px] text-warn', '先粘贴 package.json 片段，或每行写「包名 版本」。'));
+      clearUrl();
+      return;
+    }
+    if (!parsed.deps.length) {
+      result.append(el('p', 'text-[12px] text-warn', '没有识别到可对比的依赖。'));
+      renderSkipped(result, parsed);
+      clearUrl();
+      return;
+    }
+
+    const progress = el('p', 'text-[11px] text-muted', `正在查询 npm 最新版本（0/${parsed.deps.length}）…`);
+    result.append(progress);
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = '查询中…';
+    }
+
+    try {
+      const outcome = await auditDeps(parsed.deps, (state) => {
+        progress.textContent = `正在查询 npm 最新版本（${state.done}/${state.total}）…`;
+      });
+      renderOutcome(outcome, parsed);
+      syncUrl(parsed.deps);
+    } catch {
+      result.replaceChildren(el('p', 'text-[12px] text-danger', '体检失败：网络请求异常，请稍后重试。'));
+      clearUrl();
+    } finally {
+      if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = '体检';
+      }
+    }
+  }
+
   if (form && input && result) {
     exampleButton?.addEventListener('click', () => {
       input.value = EXAMPLE;
       input.focus();
     });
 
-    form.addEventListener('submit', async (event) => {
+    form.addEventListener('submit', (event) => {
       event.preventDefault();
-      if (submitButton?.disabled) return;
-
-      const parsed = parseDeps(input.value);
-      result.replaceChildren();
-
-      if (parsed.format === 'empty') {
-        result.append(el('p', 'text-[12px] text-warn', '先粘贴 package.json 片段，或每行写「包名 版本」。'));
-        return;
-      }
-      if (!parsed.deps.length) {
-        result.append(el('p', 'text-[12px] text-warn', '没有识别到可对比的依赖。'));
-        renderSkipped(result, parsed);
-        return;
-      }
-
-      const progress = el('p', 'text-[11px] text-muted', `正在查询 npm 最新版本（0/${parsed.deps.length}）…`);
-      result.append(progress);
-      if (submitButton) {
-        submitButton.disabled = true;
-        submitButton.textContent = '查询中…';
-      }
-
-      try {
-        const outcome = await auditDeps(parsed.deps, (state) => {
-          progress.textContent = `正在查询 npm 最新版本（${state.done}/${state.total}）…`;
-        });
-        renderOutcome(outcome, parsed);
-      } catch {
-        result.replaceChildren(el('p', 'text-[12px] text-danger', '体检失败：网络请求异常，请稍后重试。'));
-      } finally {
-        if (submitButton) {
-          submitButton.disabled = false;
-          submitButton.textContent = '体检';
-        }
-      }
+      void runAudit(input.value);
     });
+
+    // ?deps=vue@3.3.0,astro@3.0.0：打开链接即还原这次体检
+    const preset = parseDepsParam(new URLSearchParams(window.location.search).get('deps'));
+    if (preset.length) {
+      input.value = preset.map((dep) => `${dep.name} ${dep.current}`).join('\n');
+      void runAudit(input.value);
+    }
   }
 </script>

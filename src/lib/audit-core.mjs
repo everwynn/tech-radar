@@ -60,3 +60,60 @@ export function buildAuditRows({ deps, latestByName = {}, vulnsByName = {}, note
     };
   });
 }
+
+/**
+ * 按 OSV 给出的 fixed 版本推算「升到哪个版本能避开全部已列出公告」。
+ * 返回的是所有修复版本里的最大值，属于下限而不是推荐版本。
+ * @param {{ fixed?: string | null }[]} vulns
+ * @param {string} current
+ * @returns {{ version: string | null, resolved: number, unresolved: number }}
+ */
+export function safeTarget(vulns, current) {
+  const list = Array.isArray(vulns) ? vulns : [];
+  const fixed = list.map((vuln) => vuln?.fixed).filter((value) => typeof value === 'string' && value);
+  const unresolved = list.length - fixed.length;
+  if (!fixed.length) return { version: null, resolved: 0, unresolved };
+
+  let max = fixed[0];
+  for (const value of fixed) if (compareVersions(value, max) > 0) max = value;
+  return {
+    version: compareVersions(max, current) > 0 ? max : null,
+    resolved: fixed.length,
+    unresolved,
+  };
+}
+
+/**
+ * 把依赖压成可放进地址栏的 `name@version,name@version`。
+ * 作用域包名自带 @，解析时按最后一个 @ 切分。
+ * @param {{ name: string, current: string }[]} deps
+ * @returns {string}
+ */
+export function serializeDeps(deps) {
+  return (Array.isArray(deps) ? deps : [])
+    .filter((dep) => dep && dep.name && dep.current)
+    .map((dep) => `${dep.name}@${dep.current}`)
+    .join(',');
+}
+
+/**
+ * 解析 ?deps= 参数；格式不对的条目直接跳过，不做猜测。
+ * @param {string | null} value
+ * @returns {{ name: string, raw: string, current: string }[]}
+ */
+export function parseDepsParam(value) {
+  if (typeof value !== 'string' || !value.trim()) return [];
+  const out = [];
+  const seen = new Set();
+  for (const entry of value.split(',')) {
+    const text = entry.trim();
+    const at = text.lastIndexOf('@');
+    if (at <= 0) continue;
+    const name = text.slice(0, at).trim();
+    const current = text.slice(at + 1).trim();
+    if (!name || !/^\d+\.\d+/.test(current) || seen.has(name)) continue;
+    seen.add(name);
+    out.push({ name, raw: current, current });
+  }
+  return out;
+}

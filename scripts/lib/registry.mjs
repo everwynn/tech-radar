@@ -1,4 +1,4 @@
-export const GROUPS = new Set(['runtime', 'framework', 'frontend', 'data']);
+export const GROUPS = new Set(['runtime', 'framework', 'frontend', 'data', 'tool']);
 
 const isFilled = (value) => typeof value === 'string' && value.trim().length > 0;
 
