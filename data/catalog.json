@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-05T17:10:58.277Z",
+  "updatedAt": "2026-11-06T02:47:31.138Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -506,12 +506,12 @@
       "name": "Vue",
       "group": "framework",
       "homepage": "https://vuejs.org",
-      "latest": "3.5.44",
+      "latest": "3.5.45",
       "latestLts": null,
       "cycles": [
         {
           "cycle": "3.5",
-          "latest": "3.5.44",
+          "latest": "3.5.45",
           "releaseDate": "2024-09-03",
           "eol": false,
           "support": true,
@@ -983,10 +983,11 @@
       "name": "Astro",
       "group": "framework",
       "homepage": "https://astro.build",
-      "latest": "7.4.6",
+      "latest": "7.4.7",
       "latestLts": null,
       "cycles": [],
       "versions": [
+        "7.4.7",
         "7.4.6",
         "7.4.5",
         "7.4.4",
