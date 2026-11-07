@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-06T15:43:50.569Z",
+  "updatedAt": "2026-11-07T02:20:15.001Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -1893,12 +1893,12 @@
       "name": "Tailwind CSS",
       "group": "frontend",
       "homepage": "https://tailwindcss.com",
-      "latest": "4.3.4",
+      "latest": "4.3.5",
       "latestLts": null,
       "cycles": [
         {
           "cycle": "4.3",
-          "latest": "4.3.4",
+          "latest": "4.3.5",
           "releaseDate": "2026-05-08",
           "eol": false,
           "support": null,
