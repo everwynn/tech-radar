@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from '../components/ThemeToggle.astro';
+import VisitCounter from '../components/VisitCounter.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -135,6 +136,9 @@ const isCurrent = (href: string) => {
           <span>© {year} everwynn</span>
           <a href="https://everwynn.github.io/" class="transition-colors hover:text-ink">返回门户</a>
           <a href="https://github.com/EverWynn/tech-radar" class="transition-colors hover:text-ink">源码</a>
+        </p>
+        <p class="mt-2">
+          <VisitCounter site="tech-radar" />
         </p>
       </div>
     </footer>
