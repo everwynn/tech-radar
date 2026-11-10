@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-09T14:54:46.272Z",
+  "updatedAt": "2026-11-10T04:18:10.429Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -355,12 +355,12 @@
       "name": "Apache Tomcat",
       "group": "runtime",
       "homepage": "https://tomcat.apache.org",
-      "latest": "11.0.27",
+      "latest": "11.0.29",
       "latestLts": null,
       "cycles": [
         {
           "cycle": "11.0",
-          "latest": "11.0.27",
+          "latest": "11.0.29",
           "releaseDate": "2024-10-03",
           "eol": false,
           "support": null,
@@ -384,7 +384,7 @@
         },
         {
           "cycle": "9.0",
-          "latest": "9.0.123",
+          "latest": "9.0.124",
           "releaseDate": "2017-09-27",
           "eol": "2027-03-31",
           "support": null,
