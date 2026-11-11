@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-10T04:18:10.429Z",
+  "updatedAt": "2026-11-11T02:13:11.758Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -368,7 +368,7 @@
         },
         {
           "cycle": "10.1",
-          "latest": "10.1.61",
+          "latest": "10.1.62",
           "releaseDate": "2022-09-23",
           "eol": false,
           "support": null,
@@ -1165,10 +1165,12 @@
       "name": "Astro",
       "group": "framework",
       "homepage": "https://astro.build",
-      "latest": "7.4.8",
+      "latest": "7.4.10",
       "latestLts": null,
       "cycles": [],
       "versions": [
+        "7.4.10",
+        "7.4.9",
         "7.4.8",
         "7.4.7",
         "7.4.6",
