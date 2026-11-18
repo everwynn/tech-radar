@@ -1,0 +1,167 @@
+{
+  "updatedAt": "2026-11-18",
+  "jdkOptions": ["8", "11", "17", "21", "25"],
+  "bootLines": [
+    {
+      "id": "2.7",
+      "label": "Spring Boot 2.7",
+      "jdkMin": 8,
+      "eolCycle": "2.7",
+      "note": "最后一条 javax 版本线，2.7.18 为终版"
+    },
+    {
+      "id": "3.0-3.1",
+      "label": "Spring Boot 3.0–3.1",
+      "jdkMin": 17,
+      "eolCycle": "3.1",
+      "note": "jakarta 起点（Java 17 起）"
+    },
+    {
+      "id": "3.2-3.3",
+      "label": "Spring Boot 3.2–3.3",
+      "jdkMin": 17,
+      "eolCycle": "3.3",
+      "note": "Java 17–23（3.3.13 口径）；3.2 起支持虚拟线程"
+    },
+    {
+      "id": "3.4-3.5",
+      "label": "Spring Boot 3.4–3.5",
+      "jdkMin": 17,
+      "eolCycle": "3.5",
+      "note": "Java 17–25（3.5 口径），开源支持均已结束"
+    },
+    {
+      "id": "4.x",
+      "label": "Spring Boot 4.x",
+      "jdkMin": 17,
+      "eolCycle": "4.1",
+      "note": "Java 17–27，Spring Framework 7；Jackson 3"
+    }
+  ],
+  "libraries": [
+    {
+      "id": "mybatis-plus",
+      "name": "MyBatis-Plus",
+      "homepage": "https://baomidou.com",
+      "sources": [
+        { "label": "官方安装文档", "url": "https://baomidou.com/getting-started/install/", "checkedAt": "2026-11-18" },
+        { "label": "Release Notes", "url": "https://github.com/baomidou/mybatis-plus/releases", "checkedAt": "2026-11-18" }
+      ],
+      "cells": {
+        "2.7": { "status": "ok", "detail": "com.baomidou:mybatis-plus-boot-starter 3.5.x（javax 系）" },
+        "3.0-3.1": { "status": "ok", "detail": "mybatis-plus-spring-boot3-starter（jakarta 系，替换 javax 版 starter）" },
+        "3.2-3.3": { "status": "ok", "detail": "mybatis-plus-spring-boot3-starter，按官方文档取 3.5.x 最新" },
+        "3.4-3.5": { "status": "partial", "detail": "建议 3.5.9+：早期 3.5.x 与 Boot 3.4 的 mybatis-spring 有版本冲突；3.5.16 起基线升到 Boot 3.5" },
+        "4.x": { "status": "unknown", "detail": "Release Notes（至 3.5.18.1）未提及 Boot 4 适配，升级前查最新版本说明" }
+      }
+    },
+    {
+      "id": "jjwt",
+      "name": "JJWT",
+      "homepage": "https://github.com/jwtk/jjwt",
+      "sources": [
+        { "label": "README（版本与模块）", "url": "https://github.com/jwtk/jjwt#installation", "checkedAt": "2026-11-18" },
+        { "label": "Release Notes", "url": "https://github.com/jwtk/jjwt/releases", "checkedAt": "2026-11-18" }
+      ],
+      "cells": {
+        "2.7": { "status": "ok", "detail": "与 Boot 无耦合；显式引 jjwt-api / jjwt-impl / jjwt-jackson 0.13.x（0.12 起 API 断代，0.11 写法不适用）" },
+        "3.0-3.1": { "status": "ok", "detail": "0.13.x 可用；jjwt-jackson 基于 Jackson 2，Boot 3 同为 Jackson 2" },
+        "3.2-3.3": { "status": "ok", "detail": "0.13.x 可用，版本自行显式管理（Boot 不托管 JJWT）" },
+        "3.4-3.5": { "status": "ok", "detail": "0.13.x 可用，与 Boot 托管的 Jackson 2 兼容" },
+        "4.x": { "status": "unknown", "detail": "Boot 4 用 Jackson 3；jjwt-jackson 的 Jackson 2 依赖在 Jackson 3 环境下如何替代未核实，升级前验证或改用 jjwt-gson" }
+      }
+    },
+    {
+      "id": "springdoc",
+      "name": "springdoc-openapi",
+      "homepage": "https://springdoc.org",
+      "sources": [
+        { "label": "官网（版本线说明）", "url": "https://springdoc.org/", "checkedAt": "2026-11-18" },
+        { "label": "Release Notes", "url": "https://github.com/springdoc/springdoc-openapi/releases", "checkedAt": "2026-11-18" }
+      ],
+      "cells": {
+        "2.7": { "status": "ok", "detail": "springdoc-openapi-ui 1.7.x（v1 线，仅 Boot 2 / javax）" },
+        "3.0-3.1": { "status": "ok", "detail": "springdoc-openapi-starter-webmvc-ui 2.x（jakarta；按官方兼容表选与 3.1 对应的版本）" },
+        "3.2-3.3": { "status": "ok", "detail": "starter 2.x，官方兼容表按 Boot 小版本给出对应 2.x" },
+        "3.4-3.5": { "status": "ok", "detail": "starter 2.7–2.10（官网标注 v2.10.0 覆盖 Boot 3.x）" },
+        "4.x": { "status": "unknown", "detail": "官网已将 v2 列为旧文档（面向 Boot 3.x）；Boot 4 对应版本未在官方页面核实到，升级前查兼容表" }
+      }
+    },
+    {
+      "id": "mysql-connector-j",
+      "name": "Connector/J",
+      "homepage": "https://dev.mysql.com/doc/connector-j/en/",
+      "sources": [
+        { "label": "Boot Dependency Versions", "url": "https://docs.spring.io/spring-boot/appendix/dependency-versions/coordinates.html", "checkedAt": "2026-11-18" },
+        { "label": "Connector/J Release Notes", "url": "https://dev.mysql.com/doc/relnotes/connector-j/en/", "checkedAt": "2026-11-18" }
+      ],
+      "cells": {
+        "2.7": { "status": "ok", "detail": "2.7.18 托管 com.mysql:mysql-connector-j 8.0.33（旧坐标 mysql:mysql-connector-java 已弃用）" },
+        "3.0-3.1": { "status": "ok", "detail": "3.1.12 托管 com.mysql:mysql-connector-j 8.0.33" },
+        "3.2-3.3": { "status": "ok", "detail": "3.3.13 托管 8.3.0，无需手写版本号" },
+        "3.4-3.5": { "status": "ok", "detail": "3.5.16 托管 9.7.0，驱动类名与 JDBC URL 参数不变" },
+        "4.x": { "status": "ok", "detail": "4.1.2 托管 9.7.0，沿用 com.mysql:mysql-connector-j" }
+      }
+    },
+    {
+      "id": "lombok",
+      "name": "Lombok",
+      "homepage": "https://projectlombok.org",
+      "sources": [
+        { "label": "Changelog", "url": "https://projectlombok.org/changelog", "checkedAt": "2026-11-18" },
+        { "label": "Boot Dependency Versions", "url": "https://docs.spring.io/spring-boot/appendix/dependency-versions/coordinates.html", "checkedAt": "2026-11-18" }
+      ],
+      "cells": {
+        "2.7": { "status": "ok", "detail": "2.7.18 托管 1.18.30（支持 JDK 21）；更早的 2.7.x 托管 1.18.24，JDK 21 需手动升" },
+        "3.0-3.1": { "status": "ok", "detail": "3.1.12 托管 1.18.32（支持 JDK 21）；3.0.x 版本更早，JDK 21 需手动升" },
+        "3.2-3.3": { "status": "ok", "detail": "3.3.13 托管 1.18.38，覆盖 JDK 21–24" },
+        "3.4-3.5": { "status": "ok", "detail": "3.5.16 托管 1.18.46，覆盖 JDK 17–25" },
+        "4.x": { "status": "ok", "detail": "4.1.2 托管 1.18.48，覆盖 JDK 17+" }
+      }
+    }
+  ],
+  "migrations": [
+    {
+      "title": "javax → jakarta 包名全量迁移",
+      "level": "high",
+      "appliesTo": ["3.0-3.1", "3.2-3.3", "3.4-3.5", "4.x"],
+      "detail": "Boot 3 起 Java EE API 全部改名 jakarta.*；javax.servlet / javax.persistence / javax.validation 的 import、依赖坐标、第三方 starter 都要换。javax 时代的库不能直接装到 Boot 3 上。"
+    },
+    {
+      "title": "JDK 17 成为硬下限",
+      "level": "high",
+      "appliesTo": ["3.0-3.1", "3.2-3.3", "3.4-3.5", "4.x"],
+      "detail": "Boot 3 起基线 Java 17，编译目标（maven.compiler.release）也应为 17；停留在 JDK 8/11 的项目需先升级运行时。"
+    },
+    {
+      "title": "Jackson 2 → Jackson 3（Boot 4 专属）",
+      "level": "high",
+      "appliesTo": ["4.x"],
+      "detail": "Boot 4 基于 Jackson 3，命名空间从 com.fasterxml.jackson 改为 tools.jackson；依赖 Jackson 2 的库（如 jjwt-jackson）需确认有原生支持，否则换等价实现。"
+    },
+    {
+      "title": "Spring Security 5 → 6",
+      "level": "medium",
+      "appliesTo": ["3.0-3.1", "3.2-3.3", "3.4-3.5", "4.x"],
+      "detail": "Boot 3 自带 Spring Security 6：WebSecurityConfigurerAdapter 已移除，antMatchers 改为 requestMatchers，配置改为组件式。"
+    },
+    {
+      "title": "MyBatis-Plus 换 starter 坐标",
+      "level": "medium",
+      "appliesTo": ["3.0-3.1", "3.2-3.3", "3.4-3.5"],
+      "detail": "mybatis-plus-boot-starter（javax）→ mybatis-plus-spring-boot3-starter（jakarta）；Boot 3.4 起建议 MyBatis-Plus 3.5.9+。"
+    },
+    {
+      "title": "2.7 是 javax 版本线，升级需整体规划",
+      "level": "medium",
+      "appliesTo": ["2.7"],
+      "detail": "2.7 是最后一条 javax 版本线且已停止开源支持；将来升 Boot 3 时 javax→jakarta、JDK 17 与 starter 替换要一起做，别单点升级。"
+    },
+    {
+      "title": "Connector/J 坐标迁移",
+      "level": "low",
+      "appliesTo": ["3.0-3.1", "3.2-3.3", "3.4-3.5", "4.x"],
+      "detail": "mysql:mysql-connector-java 改为 com.mysql:mysql-connector-j；驱动类名与 JDBC URL 参数不变。"
+    }
+  ]
+}
