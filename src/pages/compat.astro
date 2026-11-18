@@ -1,0 +1,199 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import compat from '../../data/compat.json';
+import { getItems } from '../lib/catalog';
+import { eolState, eolLabel } from '../lib/eol.mjs';
+import { STATUS_LABELS, LEVEL_LABELS, sortMigrations } from '../lib/compat.mjs';
+
+type CompatCell = { status: 'ok' | 'partial' | 'no' | 'unknown'; detail: string };
+type CompatLibrary = {
+  id: string;
+  name: string;
+  homepage: string;
+  sources: { label: string; url: string; checkedAt: string }[];
+  cells: Record<string, CompatCell>;
+};
+type CompatMigration = { title: string; level: 'high' | 'medium' | 'low'; appliesTo: string[]; detail: string };
+
+const libraries = compat.libraries as CompatLibrary[];
+const migrations = sortMigrations(compat.migrations) as CompatMigration[];
+
+// EOL 打通：eolCycle 指向该版本线内最新的 endoflife cycle；匹配失败不显示徽章。
+const boot = getItems().find((item) => item.id === 'spring-boot') ?? null;
+const lines = compat.bootLines.map((line) => {
+  const cycle = boot?.cycles.find((item) => item.cycle === line.eolCycle) ?? null;
+  const state = eolState(cycle, new Date());
+  const tone = state.state === 'eol' ? 'danger' : state.state === 'near' ? 'warn' : 'ok';
+  return { ...line, eol: cycle ? { text: eolLabel(state), tone } : null };
+});
+
+const TONE_STYLE: Record<string, string> = {
+  ok: 'border-ok/40 bg-ok/10 text-ok',
+  warn: 'border-warn/40 bg-warn/10 text-warn',
+  danger: 'border-danger/40 bg-danger/10 text-danger',
+};
+
+const STATUS_STYLE: Record<string, string> = {
+  ok: TONE_STYLE.ok,
+  partial: TONE_STYLE.warn,
+  unknown: 'border-line bg-canvas text-muted',
+  no: TONE_STYLE.danger,
+};
+
+const LEVEL_STYLE: Record<string, string> = {
+  high: TONE_STYLE.danger,
+  medium: TONE_STYLE.warn,
+  low: 'border-line bg-canvas text-muted',
+};
+---
+
+<BaseLayout
+  title="Java 技术栈兼容矩阵"
+  description="Spring Boot 版本线 × MyBatis-Plus / JJWT / springdoc / Connector-J / Lombok 的兼容组合：状态、坐标与迁移警告，全部附官方来源。"
+>
+  <section class="rounded-xl border border-line bg-surface p-5">
+    <h1 class="text-[22px] font-semibold leading-tight tracking-tight sm:text-[26px]">Java 技术栈兼容矩阵</h1>
+    <p class="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted">
+      回答「这套组合能不能一起用」：选一条 Spring Boot 版本线，看周边 5 个库该用哪个坐标、有什么前置条件。
+      只陈述官方文档、Release Notes 与 Dependency Versions 页可验证的事实；核实不到的格子标为「未核实」，不猜。
+    </p>
+    <p class="mt-2 text-[11px] text-muted">
+      最后核实：{compat.updatedAt} · 手工维护，升级前请以来源链接为准 · JDK 列只校验最低要求
+    </p>
+  </section>
+
+  <section class="mt-4 rounded-xl border border-line bg-surface p-4" data-picker>
+    <h2 class="text-[13px] font-medium">我的技术栈</h2>
+    <p class="mt-1 text-[11px] text-muted">
+      选择 JDK 与版本线后高亮对应行、过滤迁移警告，并把选择写进地址栏方便分享。不选择时为全量视图。
+    </p>
+    <div class="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+      <label class="flex items-center gap-2 text-[12px]">
+        <span class="text-muted">JDK</span>
+        <select data-jdk-select class="h-8 rounded-md border border-line bg-surface px-2 text-[12px] text-ink">
+          <option value="">未选择</option>
+          {compat.jdkOptions.map((version) => <option value={version}>JDK {version}</option>)}
+        </select>
+      </label>
+      <label class="flex items-center gap-2 text-[12px]">
+        <span class="text-muted">Spring Boot</span>
+        <select data-boot-select class="h-8 rounded-md border border-line bg-surface px-2 text-[12px] text-ink">
+          <option value="">未选择</option>
+          {lines.map((line) => <option value={line.id}>{line.label}</option>)}
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <div class="mt-4 overflow-x-auto rounded-xl border border-line bg-surface">
+    <table class="w-full min-w-[760px] border-collapse text-left text-[12px]">
+      <caption class="sr-only">Spring Boot 版本线 × 周边库兼容矩阵</caption>
+      <thead>
+        <tr class="border-b border-line">
+          <th scope="col" class="min-w-[180px] px-3 py-2.5 text-[11px] font-medium text-muted">Spring Boot 版本线</th>
+          {libraries.map((library) => (
+            <th scope="col" class="px-3 py-2.5 text-[11px] font-medium text-muted">
+              <a href={library.homepage} target="_blank" rel="noreferrer" class="transition-colors hover:text-ink">
+                {library.name}
+              </a>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {lines.map((line) => (
+          <tr
+            class="border-b border-line align-top transition-colors last:border-b-0"
+            data-boot-row
+            data-line={line.id}
+            data-jdkmin={line.jdkMin}
+          >
+            <th scope="row" class="px-3 py-3 align-top font-normal">
+              <div class="flex flex-col items-start gap-1">
+                <span class="text-[13px] font-medium leading-tight">{line.label}</span>
+                <span class="text-[11px] text-muted">JDK {line.jdkMin}+ · {line.note}</span>
+                {line.eol && (
+                  <span class:list={['inline-flex rounded-full border px-2 py-0.5 text-[10px]', TONE_STYLE[line.eol.tone]]}>
+                    {line.eol.text}
+                  </span>
+                )}
+                <span class="hidden text-[11px] text-danger" data-conflict-note></span>
+              </div>
+            </th>
+            {libraries.map((library) => {
+              const cell = library.cells[line.id];
+              return (
+                <td class="px-3 py-3 align-top">
+                  <span class:list={['inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium', STATUS_STYLE[cell.status]]}>
+                    {STATUS_LABELS[cell.status]}
+                  </span>
+                  <p class="mt-1.5 text-[11px] leading-relaxed text-muted">{cell.detail}</p>
+                </td>
+              );
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <section class="mt-4" data-migrations>
+    <h2 class="text-[15px] font-semibold tracking-tight">迁移警告</h2>
+    <div class="mt-3 grid gap-3 sm:grid-cols-2">
+      {migrations.map((migration) => (
+        <article
+          class="rounded-xl border border-line bg-surface p-4"
+          data-migration
+          data-applies={migration.appliesTo.join(' ')}
+        >
+          <div class="flex items-start justify-between gap-2">
+            <h3 class="text-[13px] font-medium leading-snug">{migration.title}</h3>
+            <span class:list={['inline-flex shrink-0 rounded-full border px-2 py-0.5 text-[10px]', LEVEL_STYLE[migration.level]]}>
+              {LEVEL_LABELS[migration.level]}
+            </span>
+          </div>
+          <p class="mt-2 text-[12px] leading-relaxed text-muted">{migration.detail}</p>
+        </article>
+      ))}
+    </div>
+    <p class="mt-3 hidden text-[11px] text-muted" data-migration-empty>所选版本线没有额外迁移警告。</p>
+  </section>
+
+  <section class="mt-4 rounded-xl border border-line bg-surface p-4">
+    <h2 class="text-[13px] font-medium">来源与核实日期</h2>
+    <ul class="mt-2 space-y-1.5 text-[11px]">
+      {libraries.map((library) => (
+        <li class="flex flex-wrap items-baseline gap-x-2">
+          <span class="font-medium text-ink">{library.name}</span>
+          {library.sources.map((source) => (
+            <a
+              href={source.url}
+              target="_blank"
+              rel="noreferrer"
+              class="text-muted underline-offset-2 transition-colors hover:text-ink hover:underline"
+            >
+              {source.label}（{source.checkedAt}）
+            </a>
+          ))}
+        </li>
+      ))}
+    </ul>
+    <p class="mt-3 text-[11px] leading-relaxed text-muted">
+      矩阵为手工维护：官方文档口径变化时更新 detail 与 checkedAt，不保证与最新文档实时一致。
+    </p>
+  </section>
+
+  <div class="mt-4 flex flex-wrap items-center gap-2" data-copy-wrap hidden>
+    <button type="button" data-copy-btn class="h-8 rounded-md border border-line bg-surface px-3 text-[12px] transition-colors hover:text-ink">
+      复制我的组合链接
+    </button>
+    <p class="text-[11px] text-muted" data-copy-status hidden></p>
+    <input
+      type="text"
+      readonly
+      data-copy-fallback
+      aria-label="组合链接"
+      class="hidden h-8 w-full rounded-md border border-line bg-canvas px-2 font-mono text-[11px] text-muted sm:w-80"
+    />
+  </div>
+</BaseLayout>

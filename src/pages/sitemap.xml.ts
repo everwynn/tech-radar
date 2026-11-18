@@ -20,7 +20,7 @@ export const GET: APIRoute = ({ site }) => {
     // 尚未抓取数据时退回构建日期
   }
 
-  const entries = ['', 'about/']
+  const entries = ['', 'compat/', 'about/']
     .map((path) => {
       const loc = new URL(`${base}${path}`, origin).href;
       return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
