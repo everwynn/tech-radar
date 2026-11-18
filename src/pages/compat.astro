@@ -117,7 +117,7 @@ const LEVEL_STYLE: Record<string, string> = {
                     {line.eol.text}
                   </span>
                 )}
-                <span class="hidden text-[11px] text-danger" data-conflict-note></span>
+                <span class="text-[11px] text-danger" data-conflict-note hidden></span>
               </div>
             </th>
             {libraries.map((library) => {
@@ -156,7 +156,7 @@ const LEVEL_STYLE: Record<string, string> = {
         </article>
       ))}
     </div>
-    <p class="mt-3 hidden text-[11px] text-muted" data-migration-empty>所选版本线没有额外迁移警告。</p>
+    <p class="mt-3 text-[11px] text-muted" data-migration-empty hidden>所选版本线没有额外迁移警告。</p>
   </section>
 
   <section class="mt-4 rounded-xl border border-line bg-surface p-4">
@@ -183,17 +183,102 @@ const LEVEL_STYLE: Record<string, string> = {
     </p>
   </section>
 
-  <div class="mt-4 flex flex-wrap items-center gap-2" data-copy-wrap hidden>
-    <button type="button" data-copy-btn class="h-8 rounded-md border border-line bg-surface px-3 text-[12px] transition-colors hover:text-ink">
-      复制我的组合链接
-    </button>
-    <p class="text-[11px] text-muted" data-copy-status hidden></p>
-    <input
-      type="text"
-      readonly
-      data-copy-fallback
-      aria-label="组合链接"
-      class="hidden h-8 w-full rounded-md border border-line bg-canvas px-2 font-mono text-[11px] text-muted sm:w-80"
-    />
+  <div class="mt-4" data-copy-wrap hidden>
+    <div class="flex flex-wrap items-center gap-2">
+      <button type="button" data-copy-btn class="h-8 rounded-md border border-line bg-surface px-3 text-[12px] transition-colors hover:text-ink">
+        复制我的组合链接
+      </button>
+      <p class="text-[11px] text-muted" data-copy-status hidden></p>
+      <input
+        type="text"
+        readonly
+        data-copy-fallback
+        aria-label="组合链接"
+        class="h-8 w-full rounded-md border border-line bg-canvas px-2 font-mono text-[11px] text-muted sm:w-80"
+        hidden
+      />
+    </div>
   </div>
 </BaseLayout>
+
+<script>
+  import compat from '../../data/compat.json';
+  import { parseSelection, buildSearch, jdkConflict, migrationMatches } from '../lib/compat.mjs';
+
+  const jdkSelect = document.querySelector<HTMLSelectElement>('[data-jdk-select]');
+  const bootSelect = document.querySelector<HTMLSelectElement>('[data-boot-select]');
+  const rows = Array.from(document.querySelectorAll<HTMLElement>('[data-boot-row]'));
+  const migrations = Array.from(document.querySelectorAll<HTMLElement>('[data-migration]'));
+  const emptyNote = document.querySelector<HTMLElement>('[data-migration-empty]');
+  const copyWrap = document.querySelector<HTMLElement>('[data-copy-wrap]');
+  const copyBtn = document.querySelector<HTMLButtonElement>('[data-copy-btn]');
+  const copyStatus = document.querySelector<HTMLElement>('[data-copy-status]');
+  const copyFallback = document.querySelector<HTMLInputElement>('[data-copy-fallback]');
+
+  const selection = () => ({ jdk: jdkSelect?.value || null, boot: bootSelect?.value || null });
+
+  // 所有显隐都用 hidden 属性：不要在这些元素上加 flex/hidden 之类的 display 工具类，
+  // 否则会与 [hidden] 规则互相覆盖。
+  function apply() {
+    const { jdk, boot } = selection();
+
+    for (const row of rows) {
+      const conflict = jdkConflict({ jdkMin: Number(row.dataset.jdkmin) }, jdk);
+      row.classList.toggle('bg-canvas', Boolean(boot) && row.dataset.line === boot);
+      row.classList.toggle('opacity-40', Boolean(conflict));
+      const note = row.querySelector<HTMLElement>('[data-conflict-note]');
+      if (note) {
+        note.textContent = conflict ?? '';
+        note.hidden = !conflict;
+      }
+    }
+
+    let visible = 0;
+    for (const migration of migrations) {
+      const applies = (migration.dataset.applies ?? '').split(' ').filter(Boolean);
+      const show = migrationMatches({ appliesTo: applies }, boot);
+      migration.hidden = !show;
+      if (show) visible += 1;
+    }
+    if (emptyNote) emptyNote.hidden = !(boot && visible === 0);
+
+    const search = buildSearch({ jdk, boot });
+    history.replaceState(null, '', search ? `${location.pathname}${search}` : location.pathname);
+
+    if (copyWrap) copyWrap.hidden = !(jdk && boot);
+  }
+
+  // URL 还原：非法参数由 parseSelection 静默忽略
+  const initial = parseSelection(location.search, compat);
+  if (initial.jdk && jdkSelect) jdkSelect.value = initial.jdk;
+  if (initial.boot && bootSelect) bootSelect.value = initial.boot;
+  jdkSelect?.addEventListener('change', apply);
+  bootSelect?.addEventListener('change', apply);
+  apply();
+
+  let statusTimer: number | undefined;
+  function flash(message: string) {
+    if (!copyStatus) return;
+    copyStatus.textContent = message;
+    copyStatus.hidden = false;
+    window.clearTimeout(statusTimer);
+    statusTimer = window.setTimeout(() => {
+      copyStatus.hidden = true;
+    }, 2500);
+  }
+
+  copyBtn?.addEventListener('click', async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      flash('已复制');
+    } catch {
+      if (copyFallback) {
+        copyFallback.value = url;
+        copyFallback.hidden = false;
+        copyFallback.select();
+      }
+      flash('复制失败，请手动复制链接');
+    }
+  });
+</script>
