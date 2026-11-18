@@ -15,6 +15,7 @@
 | 项目体检 | 粘贴 `package.json` 片段或「包名 版本」列表，一次列出每个包落后多少、命中哪些漏洞、升到哪个版本能避开；结果写进地址栏，`?deps=vue@3.3.0,astro@4.0.0` 可还原 |
 | 技术清单 | 按运行时 / 框架 / 前端库 / 数据与安全 / 工具链分组，每张卡片列出最新稳定版、最新 LTS、最近 6 条版本线及各自 EOL，其余版本线可在卡片内展开 |
 | 搜索 | 按技术名、分组名、版本号过滤卡片，输入 `3.5` 可同时命中 Vue、Vite、MyBatis-Plus |
+| 兼容矩阵 | Spring Boot 5 条版本线 × MyBatis-Plus / JJWT / springdoc / Connector-J / Lombok：状态徽章、坐标与迁移警告，逐库附官方来源与核实日期；选 JDK + 版本线高亮并生成分享链接 |
 | 关于 | 数据来源、计算口径、维护方式、已知局限、隐私说明 |
 | 渐进增强 | 关闭 JS 时清单与全部静态信息照常显示，只有对比、搜索、漏洞查询不可用；375px 起无横向滚动 |
 
@@ -159,10 +160,12 @@ src/lib/audit.ts          浏览器端体检编排：npm latest + OSV 批量查�
 src/lib/vuln-ui.ts        严重度文案与色板（对比与体检共用）
 src/lib/osv.ts            浏览器端漏洞查询、解析与缓存
 src/lib/catalog.ts        构建期读取 catalog.json，容错空结构
+src/lib/compat.mjs        兼容矩阵：数据校验、选择参数、冲突与过滤纯逻辑
 src/lib/format.ts         日期与「N 天前」格式化
 src/components/           ComparePanel（对比与漏洞）/ AuditPanel（项目体检）/ TechCard / ThemeToggle
-src/pages/                首页、关于、404、robots.txt、sitemap.xml
+src/pages/                首页、兼容矩阵、关于、404、robots.txt、sitemap.xml
 data/catalog.json         页面读取的数据快照
+data/compat.json          兼容矩阵数据（手工维护）
 ```
 
 `versions.mjs` 与 `eol.mjs` 写成 `.mjs` 并开启 `allowJs`，是为了让 `fetch` 脚本与浏览器端
@@ -190,6 +193,7 @@ data/catalog.json         页面读取的数据快照
 - **项目体检只覆盖 npm**：Java 侧依赖仍需逐项对比；`latest` 标签也不等于推荐升级目标，跨大版本仍要看迁移说明。
 - **升级目标是下限而不是推荐值**：只按 OSV 的 `fixed` 取最大值推算，未考虑破坏性变更、传递依赖与调用方式。
 - **Tailwind CSS 与 TypeScript 查不到漏洞**：OSV 目前没有这两个包的公告记录，不是查询失败。
+- **兼容矩阵是手工数据**：只覆盖 5 条 Boot 版本线 × 5 个库，官方口径变化时需人工更新；滞后程度以页面 `updatedAt` 与各来源 `checkedAt` 为准。
 
 ## 许可
 
