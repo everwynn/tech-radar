@@ -43,13 +43,13 @@
   </div>
 
   <p class="mt-4 border-t border-line pt-3 text-[11px] leading-relaxed text-muted">
-    版本取 npm registry 的 latest 标签，漏洞来自 OSV；只统计当前版本命中的公告条目，不等于安全结论。解析不了的写法会单独列出，不做猜测；成功的体检会写进地址栏，方便刷新或分享。
+    版本取 npm registry 的 latest 标签，漏洞来自 OSV；只统计当前版本命中的公告条目，不等于安全结论。解析不了的写法会单独列出，不做猜测；成功的体检会写进地址栏，方便刷新或分享，结果也可直接复制为 Markdown 报告。
   </p>
 </section>
 
 <script>
   import { MAX_DEPS, parseDeps, summarizeAudit, sortAuditRows } from '../lib/deps.mjs';
-  import { parseDepsParam, safeTarget, serializeDeps } from '../lib/audit-core.mjs';
+  import { buildAuditMarkdown, parseDepsParam, safeTarget, serializeDeps } from '../lib/audit-core.mjs';
   import { auditDeps, type AuditOutcome, type AuditRow } from '../lib/audit';
   import { SEVERITY_TEXT, SEVERITY_TONE } from '../lib/vuln-ui';
 
@@ -177,6 +177,62 @@
     return item;
   }
 
+  // 「复制 Markdown」：把当前结果装成可粘贴到笔记 / PR 的报告。
+  // 链接在点击时读 location：此时 syncUrl 已把 ?deps= 写回地址栏。
+  function markdownShare(outcome: AuditOutcome, parsed: ReturnType<typeof parseDeps>) {
+    const wrap = el('div', 'mt-2 flex flex-col gap-1');
+    const row = el('div', 'flex flex-wrap items-center gap-2');
+    const button = el(
+      'button',
+      'h-8 rounded-md border border-line bg-surface px-3 text-[12px] text-muted transition hover:border-ink/30 hover:text-ink',
+      '复制 Markdown',
+    );
+    button.type = 'button';
+    const status = el('span', 'text-[11px] text-muted', '');
+    status.hidden = true;
+    row.append(button, status);
+
+    const fallback = el('textarea', 'w-full rounded-md border border-line bg-canvas px-2 py-1 font-mono text-[11px] text-muted');
+    fallback.readOnly = true;
+    fallback.rows = 6;
+    fallback.hidden = true;
+    fallback.setAttribute('aria-label', 'Markdown 报告');
+
+    let timer: number | undefined;
+    const flash = (message: string) => {
+      status.textContent = message;
+      status.hidden = false;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        status.hidden = true;
+      }, 2500);
+    };
+
+    button.addEventListener('click', async () => {
+      const markdown = buildAuditMarkdown({
+        rows: outcome.rows,
+        osvFailed: outcome.osvFailed,
+        vulnFailures: outcome.vulnFailures,
+        skipped: parsed.skipped,
+        overflow: parsed.overflow,
+        generatedAt: new Date().toISOString().slice(0, 10),
+        link: window.location.href,
+      });
+      try {
+        await navigator.clipboard.writeText(markdown);
+        flash('已复制 Markdown');
+      } catch {
+        fallback.value = markdown;
+        fallback.hidden = false;
+        fallback.select();
+        flash('复制失败，请手动复制');
+      }
+    });
+
+    wrap.append(row, fallback);
+    return wrap;
+  }
+
   function renderOutcome(outcome: AuditOutcome, parsed: ReturnType<typeof parseDeps>) {
     if (!result) return;
     const stats = summarizeAudit(outcome.rows);
@@ -202,6 +258,8 @@
         el('p', 'mt-2 text-[11px] text-muted', `其中 ${outcome.vulnFailures} 个包的漏洞详情查询失败，可稍后重试。`),
       );
     }
+
+    container.append(markdownShare(outcome, parsed));
 
     renderSkipped(container, parsed);
 

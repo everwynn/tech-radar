@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  buildAuditMarkdown,
   buildAuditRows,
   chunk,
   latestUrl,
@@ -115,4 +116,161 @@ test('分享链接：跳过格式不对和重复的条目', () => {
   ]);
   assert.deepEqual(parseDepsParam(''), []);
   assert.deepEqual(parseDepsParam(null), []);
+});
+
+test('Markdown 报告：统计行、表格与免责声明', () => {
+  const rows = [
+    {
+      name: 'vue',
+      raw: '^3.3.4',
+      current: '3.3.4',
+      latest: '3.5.22',
+      gap: { level: 'minor' },
+      gapLabel: '落后 2 个小版本',
+      ahead: false,
+      vulns: [],
+      note: null,
+    },
+    {
+      name: 'axios',
+      raw: '0.21.1',
+      current: '0.21.1',
+      latest: '1.13.2',
+      gap: { level: 'major' },
+      gapLabel: '落后 1 个大版本',
+      ahead: false,
+      vulns: [{ fixed: '1.8.2' }, { fixed: '1.9.0' }, { fixed: null }],
+      note: null,
+    },
+  ];
+  const markdown = buildAuditMarkdown({
+    rows,
+    generatedAt: '2026-11-19',
+    link: 'https://everwynn.github.io/tech-radar/?deps=axios@0.21.1,vue@3.3.4',
+  });
+
+  assert.equal(
+    markdown,
+    [
+      '## 依赖体检报告（tech-radar）',
+      '',
+      '共 2 个包 · 2 个落后 · 1 个有漏洞（3 条公告）',
+      '生成于 2026-11-19 · 来源：https://everwynn.github.io/tech-radar/?deps=axios@0.21.1,vue@3.3.4',
+      '',
+      '| 包 | 当前 | 最新 | 落后 | 漏洞 | 升级建议 |',
+      '| --- | --- | --- | --- | --- | --- |',
+      '| axios | 0.21.1 | 1.13.2 | 落后 1 个大版本 | 3 | ≥ 1.9.0（另有 1 条暂无修复） |',
+      '| vue | 3.3.4 | 3.5.22 | 落后 2 个小版本 | — | — |',
+      '',
+      '> 漏洞为当前版本命中的 OSV 公告条目，不等于可利用性；升级建议按 OSV fixed 取最大值推算，不等于推荐升级版本。',
+    ].join('\n'),
+  );
+});
+
+test('Markdown 报告：OSV 失败时不说「未发现漏洞」', () => {
+  const row = {
+    name: 'vue',
+    raw: '3.5.0',
+    current: '3.5.0',
+    latest: '3.5.0',
+    gap: { level: 'none' },
+    gapLabel: '已是最新',
+    ahead: false,
+    vulns: [],
+    note: null,
+  };
+
+  const failed = buildAuditMarkdown({ rows: [row], osvFailed: true });
+  assert.ok(failed.includes('本次漏洞批量查询失败，结论不含漏洞信息'), '要明确标注本次结论不含漏洞');
+  assert.ok(!failed.includes('未发现已知漏洞'), 'OSV 失败时不能声称没有漏洞');
+  assert.ok(!failed.includes('生成于'), '没传时间和链接时不输出这一行');
+
+  // 批量没失败、只是部分详情失败：仍可声称未发现漏洞，但要注明失败数
+  const partial = buildAuditMarkdown({ rows: [row], vulnFailures: 2 });
+  assert.ok(partial.includes('未发现已知漏洞'));
+  assert.ok(partial.includes('其中 2 个包的漏洞详情查询失败'));
+});
+
+test('Markdown 报告：跳过项与超出上限', () => {
+  const markdown = buildAuditMarkdown({
+    rows: [
+      {
+        name: 'vue',
+        raw: '3.5.0',
+        current: '3.5.0',
+        latest: '3.5.0',
+        gap: { level: 'none' },
+        gapLabel: '已是最新',
+        ahead: false,
+        vulns: [],
+        note: null,
+      },
+    ],
+    skipped: [
+      { name: 'foo', raw: '^1.0.0', reason: '范围写法' },
+      { name: 'bar', raw: 'latest', reason: '未锁定版本' },
+    ],
+    overflow: 3,
+  });
+
+  assert.ok(markdown.includes('跳过 2 个（无法落到具体版本）'));
+  assert.ok(markdown.includes('- foo ^1.0.0 · 范围写法'));
+  assert.ok(markdown.includes('- bar latest · 未锁定版本'));
+  assert.ok(markdown.includes('另有 3 个包超出 40 个上限，未查询。'));
+});
+
+test('Markdown 报告：单元格转义竖线与换行', () => {
+  const markdown = buildAuditMarkdown({
+    rows: [
+      {
+        name: 'mystery',
+        raw: '1.0.0',
+        current: '1.0.0',
+        latest: null,
+        gap: null,
+        gapLabel: '',
+        ahead: false,
+        vulns: [],
+        note: '查询失败 | 稍后重试\n请重试',
+      },
+    ],
+  });
+
+  assert.ok(markdown.includes('查询失败 \\| 稍后重试 请重试'), '竖线要转义，换行要压成空格');
+  assert.ok(!markdown.includes('| 查询失败 |'), '未转义的竖线会破环表格');
+});
+
+test('Markdown 报告：有漏洞的排前面，全无修复版本时只报数量', () => {
+  const markdown = buildAuditMarkdown({
+    rows: [
+      {
+        name: 'zzz',
+        raw: '1.0.0',
+        current: '1.0.0',
+        latest: '1.0.0',
+        gap: { level: 'none' },
+        gapLabel: '已是最新',
+        ahead: false,
+        vulns: [],
+        note: null,
+      },
+      {
+        name: 'aaa',
+        raw: '1.0.0',
+        current: '1.0.0',
+        latest: '1.0.0',
+        gap: { level: 'none' },
+        gapLabel: '已是最新',
+        ahead: false,
+        vulns: [{ fixed: null }, {}],
+        note: null,
+      },
+    ],
+  });
+
+  const table = markdown.split('\n').filter((line) => line.startsWith('| aaa') || line.startsWith('| zzz'));
+  assert.equal(table.length, 2);
+  assert.ok(table[0].startsWith('| aaa'), '有漏洞的行要排在前面');
+  assert.ok(table[0].includes('暂无修复版本（2 条）'));
+  assert.ok(table[1].includes('| — | — |'));
 });

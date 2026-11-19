@@ -1,6 +1,7 @@
 ﻿// 「项目体检」的纯逻辑：拼 URL、切批、把 npm/OSV 的返回装成表格行。
 // 网络请求在 audit.ts 里，这里只保留能被 node --test 覆盖的部分。
 import { compareVersions, describeGap, gapBetween } from './versions.mjs';
+import { MAX_DEPS, sortAuditRows, summarizeAudit } from './deps.mjs';
 
 const REGISTRY = 'https://registry.npmjs.org';
 
@@ -81,6 +82,82 @@ export function safeTarget(vulns, current) {
     resolved: fixed.length,
     unresolved,
   };
+}
+
+/**
+ * 表格单元格：竖线转义、换行压成空格，避免破坏 Markdown 表格。
+ * @param {unknown} value
+ * @returns {string}
+ */
+function mdCell(value) {
+  return String(value ?? '')
+    .replace(/\r?\n/g, ' ')
+    .replace(/\|/g, '\\|')
+    .trim();
+}
+
+/**
+ * 把一次体检结果装成可粘贴到笔记 / PR 的 Markdown 报告。
+ * 纯函数：时间与链接由调用方传入，输出确定性可测。
+ * 统计口径与面板一致；OSV 批量失败时不声称「未发现漏洞」。
+ * @param {{ rows?: object[], osvFailed?: boolean, vulnFailures?: number, skipped?: object[], overflow?: number, generatedAt?: string, link?: string }} input
+ * @returns {string}
+ */
+export function buildAuditMarkdown({
+  rows,
+  osvFailed = false,
+  vulnFailures = 0,
+  skipped = [],
+  overflow = 0,
+  generatedAt = '',
+  link = '',
+} = {}) {
+  const list = sortAuditRows(Array.isArray(rows) ? rows : []);
+  const stats = summarizeAudit(list);
+
+  const headParts = [`共 ${stats.total} 个包`, stats.outdated ? `${stats.outdated} 个落后` : '全部已是最新'];
+  if (stats.vulnerable) headParts.push(`${stats.vulnerable} 个有漏洞（${stats.vulnTotal} 条公告）`);
+  else if (!osvFailed) headParts.push('未发现已知漏洞');
+  if (stats.failed) headParts.push(`${stats.failed} 个未查到最新版本`);
+
+  const lines = ['## 依赖体检报告（tech-radar）', '', headParts.join(' · ')];
+
+  const meta = [];
+  if (generatedAt) meta.push(`生成于 ${generatedAt}`);
+  if (link) meta.push(`来源：${link}`);
+  if (meta.length) lines.push(meta.join(' · '));
+
+  lines.push('', '| 包 | 当前 | 最新 | 落后 | 漏洞 | 升级建议 |', '| --- | --- | --- | --- | --- | --- |');
+
+  for (const row of list) {
+    const vulns = Array.isArray(row.vulns) ? row.vulns : [];
+    let target = '—';
+    if (vulns.length) {
+      const safe = safeTarget(vulns, row.current);
+      if (safe.version) target = `≥ ${safe.version}${safe.unresolved ? `（另有 ${safe.unresolved} 条暂无修复）` : ''}`;
+      else if (safe.unresolved) target = `暂无修复版本（${safe.unresolved} 条）`;
+    }
+    lines.push(
+      `| ${mdCell(row.name)} | ${mdCell(row.current)} | ${mdCell(row.latest ?? row.note ?? '—')} | ${mdCell(row.latest ? row.gapLabel : '—')} | ${vulns.length || '—'} | ${mdCell(target)} |`,
+    );
+  }
+
+  if (Array.isArray(skipped) && skipped.length) {
+    lines.push('', `跳过 ${skipped.length} 个（无法落到具体版本）：`);
+    for (const item of skipped) lines.push(`- ${mdCell(`${item.name} ${item.raw || '—'} · ${item.reason}`)}`);
+  }
+  if (overflow > 0) lines.push('', `另有 ${overflow} 个包超出 ${MAX_DEPS} 个上限，未查询。`);
+
+  const warnings = [];
+  if (osvFailed) warnings.push('本次漏洞批量查询失败，结论不含漏洞信息。');
+  else if (vulnFailures > 0) warnings.push(`其中 ${vulnFailures} 个包的漏洞详情查询失败。`);
+  lines.push('', ...warnings.map((text) => `> ${text}`));
+
+  lines.push(
+    '> 漏洞为当前版本命中的 OSV 公告条目，不等于可利用性；升级建议按 OSV fixed 取最大值推算，不等于推荐升级版本。',
+  );
+
+  return lines.join('\n');
 }
 
 /**
