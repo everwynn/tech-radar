@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-17T04:45:36.061Z",
+  "updatedAt": "2026-11-19T03:49:21.291Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -1165,10 +1165,11 @@
       "name": "Astro",
       "group": "framework",
       "homepage": "https://astro.build",
-      "latest": "7.4.12",
+      "latest": "7.4.13",
       "latestLts": null,
       "cycles": [],
       "versions": [
+        "7.4.13",
         "7.4.12",
         "7.4.11",
         "7.4.10",
