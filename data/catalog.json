@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-19T03:49:21.291Z",
+  "updatedAt": "2026-11-21T03:26:08.073Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -231,12 +231,12 @@
       "name": "JDK (Eclipse Temurin)",
       "group": "runtime",
       "homepage": "https://adoptium.net",
-      "latest": "27.0.1.0.2+1",
-      "latestLts": "25.0.5+8",
+      "latest": "27.0.1.1+4",
+      "latestLts": "25.0.5.1+2",
       "cycles": [
         {
           "cycle": "27",
-          "latest": "27.0.1.0.2+1",
+          "latest": "27.0.1.1+4",
           "releaseDate": "2026-09-22",
           "eol": "2027-03-23",
           "support": null,
@@ -252,7 +252,7 @@
         },
         {
           "cycle": "25",
-          "latest": "25.0.5+8",
+          "latest": "25.0.5.1+2",
           "releaseDate": "2025-09-22",
           "eol": "2031-09-30",
           "support": null,
@@ -284,7 +284,7 @@
         },
         {
           "cycle": "21",
-          "latest": "21.0.13+9",
+          "latest": "21.0.13.1+2",
           "releaseDate": "2023-10-10",
           "eol": "2029-12-31",
           "support": null,
@@ -316,7 +316,7 @@
         },
         {
           "cycle": "17",
-          "latest": "17.0.21+9",
+          "latest": "17.0.21.1+2",
           "releaseDate": "2021-09-22",
           "eol": "2027-10-31",
           "support": null,
@@ -332,7 +332,7 @@
         },
         {
           "cycle": "11",
-          "latest": "11.0.33+10",
+          "latest": "11.0.33.1+1",
           "releaseDate": "2021-08-01",
           "eol": "2027-10-31",
           "support": null,
@@ -340,7 +340,7 @@
         },
         {
           "cycle": "8",
-          "latest": "8u512-b09",
+          "latest": "8u514-b01",
           "releaseDate": "2021-07-29",
           "eol": "2030-12-31",
           "support": null,
@@ -442,12 +442,12 @@
       "name": "Spring Boot",
       "group": "framework",
       "homepage": "https://spring.io/projects/spring-boot",
-      "latest": "4.1.2",
+      "latest": "4.1.3",
       "latestLts": null,
       "cycles": [
         {
           "cycle": "4.1",
-          "latest": "4.1.2",
+          "latest": "4.1.3",
           "releaseDate": "2026-06-30",
           "eol": "2027-07-31",
           "support": null,
@@ -455,7 +455,7 @@
         },
         {
           "cycle": "4.0",
-          "latest": "4.0.9",
+          "latest": "4.0.10",
           "releaseDate": "2025-11-30",
           "eol": "2026-12-31",
           "support": null,
@@ -593,12 +593,12 @@
       "name": "Spring Framework",
       "group": "framework",
       "homepage": "https://spring.io/projects/spring-framework",
-      "latest": "7.0.10",
+      "latest": "7.0.11",
       "latestLts": "5.3.39",
       "cycles": [
         {
           "cycle": "7.0",
-          "latest": "7.0.10",
+          "latest": "7.0.11",
           "releaseDate": "2025-11-30",
           "eol": "2027-07-31",
           "support": null,
@@ -688,12 +688,12 @@
       "name": "Vue",
       "group": "framework",
       "homepage": "https://vuejs.org",
-      "latest": "3.5.45",
+      "latest": "3.5.46",
       "latestLts": null,
       "cycles": [
         {
           "cycle": "3.5",
-          "latest": "3.5.45",
+          "latest": "3.5.46",
           "releaseDate": "2024-09-03",
           "eol": false,
           "support": true,
@@ -813,6 +813,7 @@
         }
       ],
       "versions": [
+        "3.5.46",
         "3.5.45",
         "3.5.44",
         "3.5.43",
