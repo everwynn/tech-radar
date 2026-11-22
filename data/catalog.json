@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-21T03:26:08.073Z",
+  "updatedAt": "2026-11-22T02:37:55.117Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -442,9 +442,17 @@
       "name": "Spring Boot",
       "group": "framework",
       "homepage": "https://spring.io/projects/spring-boot",
-      "latest": "4.1.3",
+      "latest": "4.2.0",
       "latestLts": null,
       "cycles": [
+        {
+          "cycle": "4.2",
+          "latest": "4.2.0",
+          "releaseDate": "2026-11-20",
+          "eol": "2027-12-31",
+          "support": null,
+          "lts": null
+        },
         {
           "cycle": "4.1",
           "latest": "4.1.3",
@@ -593,9 +601,17 @@
       "name": "Spring Framework",
       "group": "framework",
       "homepage": "https://spring.io/projects/spring-framework",
-      "latest": "7.0.11",
+      "latest": "7.1.0",
       "latestLts": "5.3.39",
       "cycles": [
+        {
+          "cycle": "7.1",
+          "latest": "7.1.0",
+          "releaseDate": "2026-11-20",
+          "eol": "2027-12-31",
+          "support": null,
+          "lts": null
+        },
         {
           "cycle": "7.0",
           "latest": "7.0.11",
