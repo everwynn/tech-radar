@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-22T02:37:55.117Z",
+  "updatedAt": "2026-11-23T03:03:59.870Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -427,6 +427,14 @@
           "latest": "5.5.36",
           "releaseDate": "2003-09-06",
           "eol": "2012-09-30",
+          "support": null,
+          "lts": null
+        },
+        {
+          "cycle": "4",
+          "latest": "4.1.40",
+          "releaseDate": "2001-09-18",
+          "eol": "2009-06-25",
           "support": null,
           "lts": null
         }
@@ -3321,12 +3329,12 @@
       "name": "Apache Maven",
       "group": "tool",
       "homepage": "https://maven.apache.org",
-      "latest": "3.10.1",
+      "latest": "3.10.2",
       "latestLts": null,
       "cycles": [
         {
           "cycle": "3.10",
-          "latest": "3.10.1",
+          "latest": "3.10.2",
           "releaseDate": "2026-09-27",
           "eol": false,
           "support": null,
