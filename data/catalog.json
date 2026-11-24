@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-23T03:03:59.870Z",
+  "updatedAt": "2026-11-24T06:21:12.035Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -3208,7 +3208,7 @@
           "cycle": "8.8",
           "latest": "8.8.4",
           "releaseDate": "2026-05-25",
-          "eol": false,
+          "eol": "2027-01-29",
           "support": "2026-07-29",
           "lts": null
         },
@@ -3216,7 +3216,7 @@
           "cycle": "8.6",
           "latest": "8.6.8",
           "releaseDate": "2026-02-11",
-          "eol": false,
+          "eol": "2026-11-25",
           "support": "2026-05-25",
           "lts": null
         },
@@ -3224,7 +3224,7 @@
           "cycle": "8.4",
           "latest": "8.4.8",
           "releaseDate": "2025-11-18",
-          "eol": false,
+          "eol": "2026-08-10",
           "support": "2026-02-11",
           "lts": null
         },
