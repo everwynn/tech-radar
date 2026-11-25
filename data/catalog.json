@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-24T06:21:12.035Z",
+  "updatedAt": "2026-11-25T05:00:34.285Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -3193,15 +3193,23 @@
       "name": "Redis",
       "group": "data",
       "homepage": "https://redis.io",
-      "latest": "8.10.3",
+      "latest": "8.12.0",
       "latestLts": null,
       "cycles": [
+        {
+          "cycle": "8.12",
+          "latest": "8.12.0",
+          "releaseDate": "2026-11-22",
+          "eol": false,
+          "support": true,
+          "lts": null
+        },
         {
           "cycle": "8.10",
           "latest": "8.10.3",
           "releaseDate": "2026-07-29",
           "eol": false,
-          "support": true,
+          "support": "2026-11-22",
           "lts": null
         },
         {
