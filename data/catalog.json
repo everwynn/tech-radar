@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-25T05:00:34.285Z",
+  "updatedAt": "2026-11-27T04:30:07.800Z",
   "sources": {
     "endoflife": "ok",
     "npm": "ok",
@@ -2535,10 +2535,11 @@
       "name": "Vite",
       "group": "frontend",
       "homepage": "https://vite.dev",
-      "latest": "8.3.8",
+      "latest": "8.4.0",
       "latestLts": null,
       "cycles": [],
       "versions": [
+        "8.4.0",
         "8.3.8",
         "8.3.7",
         "8.3.6",
